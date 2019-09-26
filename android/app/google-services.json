@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "506124082309",
+    "firebase_url": "https://amigo-secreto-v2.firebaseio.com",
+    "project_id": "amigo-secreto-v2",
+    "storage_bucket": "amigo-secreto-v2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:506124082309:android:16e4776ceee02799e29dec",
+        "android_client_info": {
+          "package_name": "com.lsambo02.amigo_secretov2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "506124082309-eppsshj058cnkb8dpi615teg1dq1g7lo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lsambo02.amigo_secretov2",
+            "certificate_hash": "9fc3ae13476cb2cc0104701fbf77449ef45009c0"
+          }
+        },
+        {
+          "client_id": "506124082309-cv0njnoj80d037fs262j7e9r06p0pkk1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFDODqs1_XuEgOBHH5u7ezIWOJ2BwdnuY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "506124082309-cv0njnoj80d037fs262j7e9r06p0pkk1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "506124082309-mp2b6eboo3ca4rs6qo2njkadk1bl07ct.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.lsambo02.amigosecretov2"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
