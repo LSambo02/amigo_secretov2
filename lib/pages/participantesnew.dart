@@ -107,11 +107,11 @@ class _ParticipantesNew extends State {
           onTap: () {
             if (!participantes.containsKey(document['username'].toString())) {
               participantes[document['username'].toString()] = '';
-              _acion(index);
+              _action(index);
               //_pressed = true;
             } else {
               participantes.remove(document['username'].toString());
-              _acion(index);
+              _action(index);
             }
           });
   }
@@ -125,7 +125,7 @@ class _ParticipantesNew extends State {
     return username;
   }
 
-  _acion(int index) {
+  _action(int index) {
     //print(participantes.length);
     setState(() {
       _pressed = participantes.length;
