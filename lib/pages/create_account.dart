@@ -21,13 +21,10 @@ class _CriarUser extends State {
   final _formKey = new GlobalKey<FormState>();
   String nome, apelido, pass, pass1, email, nickname;
   File _image;
-  DocumentSnapshot _document;
   CollectionReference utilizadores =
       Firestore.instance.collection("utilizadores");
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool _success;
   FirebaseUser currentUser;
 
   FormMode _formMode = FormMode.SIGNUP;
@@ -103,7 +100,6 @@ class _CriarUser extends State {
   Widget _nomeInput() {
     return new Padding(
       padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-      // TODO: campo para email
       child: TextFormField(
         //controller: tFcontroller1,
 
@@ -124,7 +120,6 @@ class _CriarUser extends State {
   Widget _apelidoInput() {
     return new Padding(
       padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-      // TODO: campo para email
       child: TextFormField(
         //controller: tFcontroller1,
 
@@ -145,7 +140,6 @@ class _CriarUser extends State {
   Widget _nicknameInput() {
     return new Padding(
       padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-      // TODO: campo para email
       child: TextFormField(
         //controller: tFcontroller1,
         autofocus: false,
@@ -165,7 +159,6 @@ class _CriarUser extends State {
   Widget _emailInput() {
     return new Padding(
       padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-      // TODO: campo para email
       child: TextFormField(
         //controller: tFcontroller1,
         autofocus: false,
@@ -185,7 +178,6 @@ class _CriarUser extends State {
   Widget passwordInput() {
     return new Padding(
       padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-      // TODO: campo para email
       child: TextFormField(
         //controller: tFcontroller1,
         obscureText: true,
@@ -206,7 +198,6 @@ class _CriarUser extends State {
   Widget password1Input() {
     return new Padding(
       padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-      // TODO: campo para email
       child: TextFormField(
         //controller: tFcontroller1,
         obscureText: true,
@@ -217,8 +208,9 @@ class _CriarUser extends State {
               Icons.lock,
               color: Colors.blueGrey,
             )),
-        validator: (value) =>
-            value.isEmpty && identical(value,pass) ? 'A password deve ser igual' : null,
+        validator: (value) => value.isEmpty && identical(value, pass)
+            ? 'A password deve ser igual'
+            : null,
         onSaved: (value) => pass1 = value.trim(),
       ),
     );
@@ -299,14 +291,16 @@ class _CriarUser extends State {
   uplpoadImage() async {
     File _img = File('icon/icon.png');
     //print(_img.path.toString());
-    if(pass.length >= 6){
+    if (pass.length >= 6) {
       _criarWithmailPass(nickname, email, pass);
       _signInWithEmailPass(email, pass);
     }
 
     final StorageReference firebaseStorageRef =
         FirebaseStorage.instance.ref().child(nickname + '_profilePic' + '.jpg');
-    StorageUploadTask task = _image != null ? firebaseStorageRef.putFile(_image) : firebaseStorageRef.putFile(_img);
+    StorageUploadTask task = _image != null
+        ? firebaseStorageRef.putFile(_image)
+        : firebaseStorageRef.putFile(_img);
     var imgURL = await (await task.onComplete).ref.getDownloadURL();
 
     profileURL = imgURL.toString();
@@ -324,9 +318,12 @@ class _CriarUser extends State {
             'email': email,
             'profile_picture': picURL
           })
-          .then((result) => {Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
-        return Pages(currentUser);
-      }))})
+          .then((result) => {
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) {
+                  return Pages(currentUser);
+                }))
+              })
           .catchError((err) => print(err));
 
       //print(pass);

@@ -73,38 +73,48 @@ class _Grupos extends State {
     Map<dynamic, dynamic> _participantes = document.data['participantes'];
     String group_name = document['nome'].toString();
 
-      return ListTile(
-          leading: document['icon'] != null
-              ?  ClipOval(child: Image.network(document['icon'],height: 70,width: 55,fit: BoxFit.fill,),)
-              : ClipOval(child:Image.asset('icon/icon.png',fit: BoxFit.fill,height: 70,width: 55),),
-          title: Container(
-              child: Text(
-            document['nome'].toString(),
-          )),
-          onTap: () {
-            grupos
-                .document(document.documentID)
-                .get()
-                .then((DocumentSnapshot snapshot) {
-              Map<dynamic, dynamic> participantes =
-                  snapshot.data['participantes'];
-              print(participantes.length);
-              String docId =
-                  grupos.document(document.documentID).documentID.toString();
-              _getCurrentUser().then((user) {
-                print(user);
-                if (participantes[user] != '') {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return OAmigo(user, participantes[user]);
-                  }));
-                } else
-                  //print(participantes[user]);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return Sorteio(participantes, docId);
-                  }));
-              });
+    return ListTile(
+        leading: document['icon'] != null
+            ? ClipOval(
+                child: Image.network(
+                  document['icon'],
+                  height: 70,
+                  width: 55,
+                  fit: BoxFit.fill,
+                ),
+              )
+            : ClipOval(
+                child: Image.asset('icon/icon.png',
+                    fit: BoxFit.fill, height: 70, width: 55),
+              ),
+        title: Container(
+            child: Text(
+          document['nome'].toString(),
+        )),
+        onTap: () {
+          grupos
+              .document(document.documentID)
+              .get()
+              .then((DocumentSnapshot snapshot) {
+            Map<dynamic, dynamic> participantes =
+                snapshot.data['participantes'];
+            print(participantes.length);
+            String docId =
+                grupos.document(document.documentID).documentID.toString();
+            _getCurrentUser().then((user) {
+              print(user);
+              if (participantes[user] != '') {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return OAmigo(user, participantes[user]);
+                }));
+              } else
+                //print(participantes[user]);
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return Sorteio(participantes, docId);
+                }));
             });
           });
+        });
   }
 
   Future<String> _getCurrentUser() async {
@@ -114,13 +124,10 @@ class _Grupos extends State {
     return username;
   }
 
-
   logout() {
     _auth.signOut();
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return Login();
     }));
   }
-
-
 }

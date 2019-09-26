@@ -69,54 +69,56 @@ class _ParticipantesNew extends State {
     );
   }
 
-  Widget _buildListTitle(BuildContext context, DocumentSnapshot document, int index) {
-
-    _getCurrentUser().then((user) {  print(user);});
+  Widget _buildListTitle(
+      BuildContext context, DocumentSnapshot document, int index) {
+    _getCurrentUser().then((user) {
+      print(user);
+    });
 
     return ListTile(
-          leading: document['profile_picture'] != null
-              ? ClipOval(
-                  child: Image.network(
-
-                  document['profile_picture'].toString(),
-                  height: 70,
-                  width: 55,
-                  fit: BoxFit.fill,
-                ))
-              : ClipOval(
-                  child: Image.asset(
-                  'icon/icon.png',
-                  height: 70,
-                  width: 55,
-                  fit: BoxFit.fill,
-                )),
-          trailing: participantes.containsKey(document['username'].toString())
-              ? Icon(_label)
-              : Icon(_outline),
-          title: Container(
-              child: Row(
-            children: <Widget>[
-              Text(document['username'].toString()),
-            ],
-          )),
-          subtitle: Container(
-              child: Row(
-            children: <Widget>[
-              Text(document['nome'].toString() + ' ' + document['apelido'].toString())],
-          )),
-          onTap: () {
-            if (!participantes.containsKey(document['username'].toString())) {
-              participantes[document['username'].toString()] = '';
-              _action(index);
-              //_pressed = true;
-            } else {
-              participantes.remove(document['username'].toString());
-              _action(index);
-            }
-          });
+        leading: document['profile_picture'] != null
+            ? ClipOval(
+                child: Image.network(
+                document['profile_picture'].toString(),
+                height: 70,
+                width: 55,
+                fit: BoxFit.fill,
+              ))
+            : ClipOval(
+                child: Image.asset(
+                'icon/icon.png',
+                height: 70,
+                width: 55,
+                fit: BoxFit.fill,
+              )),
+        trailing: participantes.containsKey(document['username'].toString())
+            ? Icon(_label)
+            : Icon(_outline),
+        title: Container(
+            child: Row(
+          children: <Widget>[
+            Text(document['username'].toString()),
+          ],
+        )),
+        subtitle: Container(
+            child: Row(
+          children: <Widget>[
+            Text(document['nome'].toString() +
+                ' ' +
+                document['apelido'].toString())
+          ],
+        )),
+        onTap: () {
+          if (!participantes.containsKey(document['username'].toString())) {
+            participantes[document['username'].toString()] = '';
+            _action(index);
+            //_pressed = true;
+          } else {
+            participantes.remove(document['username'].toString());
+            _action(index);
+          }
+        });
   }
-
-
 
   Future<String> _getCurrentUser() async {
     currentUser = await _auth.currentUser();

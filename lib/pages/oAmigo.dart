@@ -10,7 +10,12 @@ class OAmigo extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-      appBar: AppBar(title: Text('O seu amigo ' + eu),actions: <Widget>[FlatButton(child:Text(''),onPressed: (){}),],),
+      appBar: AppBar(
+        title: Text('O seu amigo ' + eu),
+        actions: <Widget>[
+          FlatButton(child: Text(''), onPressed: () {}),
+        ],
+      ),
       body: Center(
         child: Container(
             child: Text(

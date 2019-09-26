@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:amigo_secretov2/pages/groups.dart';
-import 'package:amigo_secretov2/pages/create_account.dart';
-import 'package:amigo_secretov2/pages/login.dart';
 
-//void main() => runApp(AmigoSecreto(""));
+
 
 class Sorteio extends StatefulWidget {
   Map<dynamic, dynamic> participantes;
@@ -35,16 +31,10 @@ class _Sorteio extends State<Sorteio> {
   final CollectionReference utilizadores =
       Firestore.instance.collection("Utilizador");
 
-  //List lista() {}
 
   @override
   Widget build(BuildContext context) {
-    //TODO: Passar categoria como parâmetro
-    //Stream<QuerySnapshot> snapshots =utilizadores.where('categoria', isEqualTo: categoria).snapshots();
-    //print(categoria);
 
-    // Stream<QuerySnapshot> snapshots =
-    // utilizadores.snapshots();
     return Scaffold(
         appBar: AppBar(
           title: Text("Particpantes"),

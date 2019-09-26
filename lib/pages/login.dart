@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:amigo_secretov2/pages/create_account.dart';
 import './pagesnavbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,7 +25,6 @@ class _Login extends State {
   String pass;
   String email;
 
-  FormMode _formMode = FormMode.LOGIN;
   bool _isIos;
   bool _isLoading;
   String _errorMessage;
@@ -56,11 +54,9 @@ class _Login extends State {
                   _showLogo(),
                   Padding(
                     padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-                    //TODO: deve ser único
                     child: TextFormField(
                       keyboardType: TextInputType.emailAddress,
                       autofocus: false,
-                      //controller: tFcontroller,
                       decoration: new InputDecoration(
                           hintText: 'Email',
                           icon: Icon(
@@ -74,7 +70,6 @@ class _Login extends State {
                   ),
                   Padding(
                     padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-                    // TODO: campo para email
                     child: TextFormField(
                       //controller: tFcontroller1,
                       obscureText: true,
@@ -186,11 +181,13 @@ class _Login extends State {
           password: pass,
         ))
             .user;
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) {
           return Pages(user);
         }));
       } else {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) {
           return Pages(user);
         }));
       }

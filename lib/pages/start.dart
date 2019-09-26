@@ -35,25 +35,25 @@ class _Start extends State {
                       setState(() {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return CriarUser();
-                        }));
+                              return CriarUser();
+                            }));
                       });
                     }),
                 RaisedButton(
                     child: Text('Entrar'),
                     onPressed: () {
                       setState(() {
-                       _getCurrentUser().then((user) {
+                        _getCurrentUser().then((user) {
                           if (user == null) {
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
-                              return Login();
-                            }));
+                                  return Login();
+                                }));
                           } else {
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
-                              return Pages(user);
-                            }));
+                                  return Pages(user);
+                                }));
                           }
                         });
                         Navigator.push(context,
@@ -67,11 +67,10 @@ class _Start extends State {
           ),
         ));
   }
-
+//TODO: CREATE A _GETCURRENTUSER CLASS FOR ALL WIDGETS
   Future<FirebaseUser> _getCurrentUser() async {
     currentUser = await _auth.currentUser();
     //print('Hello ' + currentUser.displayName.toString());
-    String username = currentUser.displayName.toString();
     return currentUser;
   }
 }

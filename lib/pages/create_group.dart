@@ -3,11 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:amigo_secretov2/widgets/nome.dart';
-import 'package:amigo_secretov2/widgets/descInput.dart';
 import 'groups.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:path/path.dart' as Path;
 
 class CriarGrupo extends StatefulWidget {
   Map<String, String> participantes;
@@ -34,17 +31,13 @@ class _CriarGrupo extends State {
   CollectionReference grupos = Firestore.instance.collection('grupos');
   FirebaseUser currentUser;
 
-  final tFcontroller = new TextEditingController();
-  final tFcontroller1 = new TextEditingController();
+  final nomeController = new TextEditingController();
+  final descController = new TextEditingController();
 
-  //final tFcontroller5 = new TextEditingController();
 
   File _image;
-  String _uploadedFileURL;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  DocumentSnapshot _document;
 
-  //final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -60,11 +53,11 @@ class _CriarGrupo extends State {
               _image == null
                   ? CircleAvatar(
                       radius: 80,
-                        child: IconButton(
-                          icon: Icon(Icons.photo),
-                          tooltip: 'Adicionar foto',
-                          onPressed: getImage,
-                        ),
+                      child: IconButton(
+                        icon: Icon(Icons.photo),
+                        tooltip: 'Adicionar foto',
+                        onPressed: getImage,
+                      ),
                     )
                   : CircleAvatar(
                       radius: 80,
@@ -88,7 +81,7 @@ class _CriarGrupo extends State {
                       Icons.group,
                       color: Colors.blueGrey,
                     )),
-                controller: tFcontroller,
+                controller: nomeController,
               ),
               TextField(
                 //controller: tFcontroller1,
@@ -100,7 +93,7 @@ class _CriarGrupo extends State {
                       color: Colors.blueGrey,
                     )),
                 maxLines: 3,
-                controller: tFcontroller1,
+                controller: descController,
               ),
             ],
           ),
@@ -111,8 +104,8 @@ class _CriarGrupo extends State {
   @override
   void dispose() {
     // TODO: implement dispose
-    tFcontroller.dispose();
-    tFcontroller1.dispose();
+    nomeController.dispose();
+    descController.dispose();
     super.dispose();
   }
 
@@ -129,25 +122,15 @@ class _CriarGrupo extends State {
     //print(_img.path.toString());
     final StorageReference firebaseStorageRef = FirebaseStorage.instance
         .ref()
-        .child(tFcontroller.text + '_group_icon' + '.jpg');
-    StorageUploadTask task = _image != null ? firebaseStorageRef.putFile(_image) : firebaseStorageRef.putFile(_img);
+        .child(nomeController.text + '_group_icon' + '.jpg');
+    StorageUploadTask task = _image != null
+        ? firebaseStorageRef.putFile(_image)
+        : firebaseStorageRef.putFile(_img);
     var imgURL = await (await task.onComplete).ref.getDownloadURL();
 
     group_iconURL = imgURL.toString();
 
     criar(imgURL.toString());
-
-    /*StorageReference storageReference = FirebaseStorage.instance
-        .ref()
-        .child('chats/${Path.basename(_image.path)}}');
-    StorageUploadTask uploadTask = storageReference.putFile(_image)..events.listen((event) => print('EVENT ${event.type}'));
-    await uploadTask.onComplete;
-    print('File Uploaded');
-    storageReference.getDownloadURL().then((fileURL) {
-      setState(() {
-        _uploadedFileURL = fileURL;
-      });
-    });*/
   }
 
   Widget _primaryButton() {
@@ -159,15 +142,15 @@ class _CriarGrupo extends State {
 
   void criar(String imgURL) {
     //String admin;
-    if (tFcontroller.text != '' &&
-        tFcontroller1.text != '' &&
-        tFcontroller1 != null &&
-        tFcontroller != null) {
+    if (nomeController.text != '' &&
+        descController.text != '' &&
+        descController != null &&
+        nomeController != null) {
       _getCurrentUser().then((value) {
         grupos
             .add({
-              'nome': tFcontroller.text,
-              'descricao': tFcontroller1.text,
+              'nome': nomeController.text,
+              'descricao': descController.text,
               'participantes': participantes,
               'admnistrador': value,
               'icon': imgURL
