@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:amigo_secretov2/pages/create_account.dart';
 import 'package:amigo_secretov2/pages/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
 import 'pagesnavbar.dart';
 
 class Start extends StatefulWidget {
@@ -35,8 +36,8 @@ class _Start extends State {
                       setState(() {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                              return CriarUser();
-                            }));
+                          return CriarUser();
+                        }));
                       });
                     }),
                 RaisedButton(
@@ -47,19 +48,19 @@ class _Start extends State {
                           if (user == null) {
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
-                                  return Login();
-                                }));
+                              return Login();
+                            }));
                           } else {
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
-                                  return Pages(user);
-                                }));
+                              return Pages();
+                            }));
                           }
                         });
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                              return Login();
-                            }));
+                          return Login();
+                        }));
                       });
                     })
               ],
@@ -67,6 +68,7 @@ class _Start extends State {
           ),
         ));
   }
+
 //TODO: CREATE A _GETCURRENTUSER CLASS FOR ALL WIDGETS
   Future<FirebaseUser> _getCurrentUser() async {
     currentUser = await _auth.currentUser();

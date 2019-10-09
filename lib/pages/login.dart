@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import './pagesnavbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+import './pagesnavbar.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -183,12 +184,12 @@ class _Login extends State {
             .user;
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) {
-          return Pages(user);
+          return Pages();
         }));
       } else {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) {
-          return Pages(user);
+          return Pages();
         }));
       }
     });

@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'groups.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+import 'groups.dart';
 
 class CriarGrupo extends StatefulWidget {
   Map<String, String> participantes;
@@ -34,10 +36,8 @@ class _CriarGrupo extends State {
   final nomeController = new TextEditingController();
   final descController = new TextEditingController();
 
-
   File _image;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +118,9 @@ class _CriarGrupo extends State {
   }
 
   uplpoadImage() async {
+    _getCurrentUser().then((value) {
+      print(value);
+    });
     File _img = File('icon/icon.png');
     //print(_img.path.toString());
     final StorageReference firebaseStorageRef = FirebaseStorage.instance
@@ -140,13 +143,18 @@ class _CriarGrupo extends State {
     );
   }
 
+  // update(value) => value = '';
+
   void criar(String imgURL) {
-    //String admin;
+    String val;
     if (nomeController.text != '' &&
         descController.text != '' &&
         descController != null &&
         nomeController != null) {
       _getCurrentUser().then((value) {
+        print(value + 'j');
+        participantes[value] = '';
+        print(participantes);
         grupos
             .add({
               'nome': nomeController.text,

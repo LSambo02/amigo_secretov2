@@ -1,13 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:amigo_secretov2/pages/login.dart';
-import 'package:amigo_secretov2/pages/sorteioPage.dart';
-import 'package:amigo_secretov2/pages/groups.dart';
 import 'package:amigo_secretov2/pages/create_account.dart';
-import 'package:amigo_secretov2/pages/oAmigo.dart';
-import 'package:amigo_secretov2/pages/perfil.dart';
-import 'package:amigo_secretov2/pages/create_group.dart';
-import 'package:amigo_secretov2/pages/participantesnew.dart';
-import 'package:amigo_secretov2/pages/pagesnavbar.dart';
+import 'package:amigo_secretov2/pages/groups.dart';
+import 'package:amigo_secretov2/pages/login.dart';
+import 'package:flutter/material.dart';
 
 void main() => runApp(Page());
 
@@ -25,6 +19,7 @@ class Page extends StatelessWidget {
       routes: {
         '/login': (context) => Login(),
         '/signup': (context) => CriarUser(),
+        '/grupos': (context) => Grupos()
       },
     );
   }

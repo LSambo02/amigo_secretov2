@@ -1,11 +1,12 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'pagesnavbar.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 class CriarUser extends StatefulWidget {
   @override
@@ -294,18 +295,19 @@ class _CriarUser extends State {
     if (pass.length >= 6) {
       _criarWithmailPass(nickname, email, pass);
       _signInWithEmailPass(email, pass);
+
+      final StorageReference firebaseStorageRef = FirebaseStorage.instance
+          .ref()
+          .child(nickname + '_profilePic' + '.jpg');
+      StorageUploadTask task = _image != null
+          ? firebaseStorageRef.putFile(_image)
+          : firebaseStorageRef.putFile(_img);
+      await (await task.onComplete).ref.getDownloadURL().then((value) {
+        profileURL = value.toString();
+
+        criar(value.toString());
+      }).then((value) => CircularProgressIndicator());
     }
-
-    final StorageReference firebaseStorageRef =
-        FirebaseStorage.instance.ref().child(nickname + '_profilePic' + '.jpg');
-    StorageUploadTask task = _image != null
-        ? firebaseStorageRef.putFile(_image)
-        : firebaseStorageRef.putFile(_img);
-    var imgURL = await (await task.onComplete).ref.getDownloadURL();
-
-    profileURL = imgURL.toString();
-
-    criar(imgURL.toString());
   }
 
   void criar(String picURL) {
@@ -321,7 +323,7 @@ class _CriarUser extends State {
           .then((result) => {
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) {
-                  return Pages(currentUser);
+                  return Pages();
                 }))
               })
           .catchError((err) => print(err));

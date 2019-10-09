@@ -1,9 +1,12 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
+import 'dart:math';
+
+import 'package:amigo_secretov2/pages/oAmigo.dart';
+import 'package:amigo_secretov2/utilities/FireUser.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
-
-
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class Sorteio extends StatefulWidget {
   Map<dynamic, dynamic> participantes;
@@ -26,14 +29,20 @@ class _Sorteio extends State<Sorteio> {
 
   CollectionReference grupos = Firestore.instance.collection('grupos');
   FirebaseUser currentUser;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FireUser _fireUser = new CurrentUser();
 
   final CollectionReference utilizadores =
       Firestore.instance.collection("Utilizador");
 
+  Random rndm = new Random();
 
   @override
   Widget build(BuildContext context) {
+    List codes = new List.generate(
+        participantes.length, (_) => rndm.nextInt(participantes.length + 30));
+    codes.shuffle();
+    String title = 'Erro de conexão';
+    String content = 'Não foi possível concluir a operação';
 
     return Scaffold(
         appBar: AppBar(
@@ -45,25 +54,33 @@ class _Sorteio extends State<Sorteio> {
                 child: ListView.builder(
                     itemCount: participantes.length,
                     itemBuilder: (context, index) {
-                      String aux = (index+22).toString();
                       String key = participantes.keys.elementAt(index);
                       //print(key);
                       return RaisedButton(
                         onPressed: () {
                           setState(
                             () {
-                              _getCurrentUser().then((user) {
-
-                                  if (key != user) {
-                                    aux =key;
-                                    participantes.update(user, (value)=>key);
-                                    print(participantes);
-                                    grupos.document(docId).updateData(
-                                        {'participantes': participantes});
-
-
-                                  }
-
+                              _fireUser.getCurrentUser().then((user) {
+                                if (key != user) {
+                                  participantes.update(user, (value) => key);
+                                  //print(participantes);
+                                  grupos.document(docId).updateData(
+                                      {'participantes': participantes});
+                                  Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) {
+                                    return OAmigo(user, participantes[user]);
+                                  }));
+                                } else {
+                                  Platform.isIOS
+                                      ? CupertinoAlertDialog(
+                                          title: Text(title),
+                                          content: Text(content),
+                                        )
+                                      : AlertDialog(
+                                          title: Text(title),
+                                          content: Text(content),
+                                        );
+                                }
                               });
                             },
                           );
@@ -71,7 +88,7 @@ class _Sorteio extends State<Sorteio> {
                         child: Container(
                           child: Row(
                             children: <Widget>[
-                              new Text((aux).toString())
+                              new Text('AS' + codes[index].toString())
                             ],
                           ),
                         ),
@@ -81,12 +98,5 @@ class _Sorteio extends State<Sorteio> {
                     }))
           ],
         ));
-  }
-
-  Future<String> _getCurrentUser() async {
-    currentUser = await _auth.currentUser();
-    //print('Hello ' + currentUser.displayName.toString());
-    String username = currentUser.displayName.toString();
-    return username;
   }
 }
