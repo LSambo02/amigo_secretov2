@@ -1,5 +1,9 @@
+import 'package:amigo_secretov2/utilities/sharedPreferences.dart';
+import 'package:amigo_secretov2/widgets/loadingIndicator.dart';
+import 'package:amigo_secretov2/widgets/showAlertDialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import './pagesnavbar.dart';
@@ -23,6 +27,8 @@ class _Login extends State {
       Firestore.instance.collection('utilizadores');
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  final SharedUserState userState = new UserState();
+
   String pass;
   String email;
 
@@ -45,7 +51,6 @@ class _Login extends State {
         title: Text('Entrar'),
       ),
       body: Container(
-        margin: EdgeInsets.only(top: 100.0),
         child: Container(
             margin: EdgeInsets.all(10.0),
             child: Form(
@@ -87,8 +92,9 @@ class _Login extends State {
                       onSaved: (value) => pass = value.trim(),
                     ),
                   ),
-                  _primaryButton(),
-                  _secondaryButton()
+                  _isLoading ? LoadingIndicator() : _primaryButton(),
+                  _secondaryButton(),
+                  _forgetButton()
                 ],
               ),
             )),
@@ -117,6 +123,33 @@ class _Login extends State {
       onPressed: () {
         setState(() {
           Navigator.pushReplacementNamed(context, '/signup');
+        });
+      },
+    );
+  }
+
+  Widget _forgetButton() {
+    return new FlatButton(
+      child: new Text('Esqueceu password? ',
+          style: new TextStyle(
+              fontSize: 13.0,
+              fontWeight: FontWeight.w300,
+              color: Colors.blueGrey)),
+      onPressed: () {
+        setState(() {
+          _formKey.currentState.save();
+          if (!email.isEmpty) {
+            resetPassword(email);
+            return ShowAlertDialog().showAlertDialog(
+                context,
+                'Verifique seu email',
+                'Mandamos-lhe um email para reiniciar sua password \n Certifique-se de introduzir \n uma password que difere da anterior');
+          } else {
+            return ShowAlertDialog().showAlertDialog(
+                context,
+                'Verifique seu email e Password',
+                'Insira pelo um email válido');
+          }
         });
       },
     );
@@ -151,7 +184,7 @@ class _Login extends State {
   void _validateAndSubmit() async {
     setState(() {
       _errorMessage = "";
-      _isLoading = true;
+      _isLoading = false;
     });
     if (_validateAndSave()) {
       String userId = "";
@@ -159,7 +192,7 @@ class _Login extends State {
         _signInWithEmailPass(email, pass);
         print('Signed in: $userId');
         setState(() {
-          _isLoading = false;
+          _isLoading = true;
         });
       } catch (e) {
         print('Error: $e');
@@ -175,22 +208,50 @@ class _Login extends State {
   }
 
   Future<FirebaseUser> _signInWithEmailPass(String email, String pass) async {
+    print('pass');
     _getCurrentUser().then((user) async {
       if (user == null) {
-        user = (await _auth.signInWithEmailAndPassword(
+        user = (await _auth
+                .signInWithEmailAndPassword(
           email: email,
           password: pass,
-        ))
+        )
+                .catchError((onError) {
+          setState(() {
+            _isLoading = false;
+          });
+          return ShowAlertDialog().showAlertDialog(
+              context,
+              "Email ou Password Incorrectos",
+              "Por favor certifique-se \n de introduzir os dados correctos");
+        }))
             .user;
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) {
-          return Pages();
-        }));
+        print(user);
+        if (user.isEmailVerified) {
+          userState.save(true);
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) {
+            return Pages();
+          }));
+        } else {
+          _auth.signOut();
+          userState.delete();
+          setState(() {
+            _isLoading = false;
+          });
+          return ShowAlertDialog().showAlertDialog(
+              context,
+              'Verifique seu email e Password',
+              'Confirme seu endereço de email \n Mandamos-lhe um email de verficação');
+        }
       } else {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) {
-          return Pages();
-        }));
+        setState(() {
+          _isLoading = false;
+        });
+        _auth.signOut();
+        userState.delete();
+        return ShowAlertDialog().showAlertDialog(
+            context, 'Verifique seu email e Password', 'Insira dados válidos');
       }
     });
   }
@@ -198,5 +259,10 @@ class _Login extends State {
   Future<FirebaseUser> _getCurrentUser() async {
     currentUser = await _auth.currentUser();
     return currentUser;
+  }
+
+  @override
+  Future<void> resetPassword(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
   }
 }

@@ -1,6 +1,6 @@
-import 'dart:io';
-
 import 'package:amigo_secretov2/pages/participantesnew.dart';
+import 'package:amigo_secretov2/widgets/showAlertDialog.dart';
+import 'package:amigo_secretov2/widgets/showAlertDialogDoubleOption.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import '../utilities/FireUser.dart';
 import '../widgets/LogOutButon.dart';
+import 'addParticipantes.dart';
 import 'oAmigo.dart';
 import 'sorteioPage.dart';
 
@@ -24,10 +25,10 @@ class Grupos extends StatefulWidget {
 
 class _Grupos extends State {
   CollectionReference grupos = Firestore.instance.collection('grupos');
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  FirebaseUser currentUser;
   final FireUser _currentUser = new CurrentUser();
+
+  var admin;
 
   //_Grupos(_currentUser);
   @override
@@ -44,7 +45,10 @@ class _Grupos extends State {
                 stream: snapshots,
                 builder: (context, snapshot) {
                   if (!snapshot.hasData)
-                    return const Center(child: CircularProgressIndicator());
+                    return Container(
+                        margin: EdgeInsets.all(160.0),
+                        child:
+                            const Center(child: CircularProgressIndicator()));
                   return new Expanded(
                       child: ListView.separated(
                     itemCount: snapshot.data.documents.length,
@@ -78,8 +82,8 @@ class _Grupos extends State {
   Widget _buildListTitle(BuildContext context, DocumentSnapshot document) {
     //Map<dynamic, dynamic> _participantes = document.data['participantes'];
     //print(_participantes.keys);
-    String title = 'Erro de conexão';
-    String content = 'Não foi possível concluir a operação';
+    String _title = 'Erro de conexão';
+    String _content = 'Não foi possível concluir a operação';
 
     return FutureBuilder(
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
@@ -87,29 +91,13 @@ class _Grupos extends State {
           case ConnectionState.done:
             return listTile(document, context, snapshot);
           case ConnectionState.none:
-            return Platform.isIOS
-                ? CupertinoAlertDialog(
-                    title: Text(title),
-                    content: Text(content),
-                  )
-                : AlertDialog(
-                    title: Text(title),
-                    content: Text(content),
-                  );
+            return ShowAlertDialog().showAlertDialog(context, _title, _content);
             break;
           case ConnectionState.waiting:
-            return CircularProgressIndicator();
+            return Container();
             break;
           case ConnectionState.active:
-            return Platform.isIOS
-                ? CupertinoAlertDialog(
-                    title: Text(title),
-                    content: Text(content),
-                  )
-                : AlertDialog(
-                    title: Text(title),
-                    content: Text(content),
-                  );
+            return ShowAlertDialog().showAlertDialog(context, _title, _content);
             break;
         }
       },
@@ -122,25 +110,98 @@ class _Grupos extends State {
     //print(snapshot.data);
     Map<dynamic, dynamic> _participantes = document.data['participantes'];
     String groupName = document['nome'].toString();
+    String docId = grupos.document(document.documentID).documentID.toString();
+    Map<String, String> empty = new Map();
+    String admin = document['admnistrador'].toString();
+    var empty2;
 
     if (_participantes.containsKey(snapshot.data))
       return ListTile(
           leading: document['icon'] != null
-              ? ClipOval(
-                  child: Image.network(
-                    document['icon'],
-                    height: 70,
-                    width: 55,
-                    fit: BoxFit.fill,
+              ? CircleAvatar(
+                  radius: 25,
+                  foregroundColor: Colors.blueGrey,
+                  child: ClipOval(
+                    child: SizedBox(
+                      height: 70,
+                      width: 55,
+                      child: Image.network(
+                        document['icon'],
+                        fit: BoxFit.fill,
+                      ),
+                    ),
                   ),
                 )
-              : ClipOval(
-                  child: Image.asset('icon/icon.png',
-                      fit: BoxFit.fill, height: 70, width: 55),
+              : CircleAvatar(
+                  radius: 10,
+                  child: ClipOval(
+                    child: SizedBox(
+                      height: 70,
+                      width: 55,
+                      child: Image.asset(
+                        'icon/icon.png',
+                        fit: BoxFit.fill,
+                      ),
+                    ),
+                  ),
+                ),
+          trailing: admin == snapshot.data
+              ? PopupMenuButton(
+                  icon: Icon(Icons.more_vert),
+                  onSelected: (result) {
+                    setState(() {
+                      if (result == 1) {
+                        _participantes.forEach((k, v) => empty[k] = '');
+                        //empty[admin] = '';
+                        //print('El admin: ' + empty.toString());
+                        grupos
+                            .document(docId)
+                            .updateData({'participantes': empty});
+                      } else if (result == 2) {
+                        return ShowAlertDialogDoubleOption().showAlertDialog(
+                            context,
+                            'Deseja mesmo apagar o grupo?',
+                            'Esta acção é irreversível!',
+                            deleteGroup(docId),
+                            () {});
+                      } else if (result == 3) {
+                        /*if (showAlertDialogDB.showAlertDialog(
+                                context,
+                                'Deseja retirar todos os amigos secretos?',
+                                'Adicionar novos Participantes implica todos ficarem sem amigos') ==
+                           true) {*/
+                        _participantes.forEach((k, v) => empty[k] = '');
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                          return AddParticipantes(empty, docId);
+                        }));
+                        //print('ok');
+                        // Navigator.of(context).pop();
+                        //}
+                      }
+                      //print('El admin: ' + admin);
+                      // grupos.document(docId).updateData({'participantes': empty2});
+                    });
+                  },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry>[
+                        PopupMenuItem(child: Text('Reiniciar Grupo'), value: 1),
+                        PopupMenuItem(
+                          child: Text('Apagar Grupo'),
+                          value: 2,
+                        ),
+                        PopupMenuItem(
+                          child: Text('Adicionar Participantes'),
+                          value: 3,
+                        )
+                      ])
+              : Container(
+                  height: 0,
+                  width: 0,
                 ),
           title: Container(
               child: Text(
             groupName,
+            style: TextStyle(fontSize: 18),
           )),
           onTap: () {
             grupos
@@ -151,8 +212,7 @@ class _Grupos extends State {
                   snapshot.data['participantes'];
               //List part = participantes.keys;
               //print(grupos.document(document.documentID).documentID.toString());
-              String docId =
-                  grupos.document(document.documentID).documentID.toString();
+
               _currentUser.getCurrentUser().then((user) {
                 //print(user);
                 if (participantes[user] != '') {
@@ -160,9 +220,9 @@ class _Grupos extends State {
                     return OAmigo(user, participantes[user]);
                   }));
                 } else
-                  //print(participantes[user]);
                   Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return Sorteio(participantes, docId);
+                    return Sorteio(
+                        groupName, participantes, docId.toString(), admin);
                   }));
               });
             });
@@ -173,6 +233,10 @@ class _Grupos extends State {
         color: Colors.transparent,
         height: 0.0,
       );
+  }
+
+  deleteGroup(docID) {
+    grupos.document(docID).delete();
   }
 
   getGroups(DocumentSnapshot document, Map<dynamic, dynamic> _participantes,

@@ -1,12 +1,11 @@
 import 'dart:io';
 
+import 'package:amigo_secretov2/widgets/loadingIndicator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
-import 'groups.dart';
 
 class CriarGrupo extends StatefulWidget {
   Map<String, String> participantes;
@@ -24,7 +23,7 @@ class _CriarGrupo extends State {
   Map<String, String> participantes;
   String nome, desc, group_iconURL;
   bool _isIos;
-  bool _isLoading;
+  bool _isLoading = false;
   String _errorMessage;
   final _formKey = new GlobalKey<FormState>();
 
@@ -41,7 +40,6 @@ class _CriarGrupo extends State {
 
   @override
   Widget build(BuildContext context) {
-    Stream<QuerySnapshot> snapshots = grupos.snapshots();
     return Scaffold(
         appBar: AppBar(
           title: Text('Criar grupo'),
@@ -73,7 +71,6 @@ class _CriarGrupo extends State {
                       ),
                     ),
               TextField(
-                //controller: tFcontroller1,
                 autofocus: false,
                 decoration: new InputDecoration(
                     hintText: 'Nome do grupo',
@@ -83,22 +80,29 @@ class _CriarGrupo extends State {
                     )),
                 controller: nomeController,
               ),
-              TextField(
-                //controller: tFcontroller1,
-                autofocus: false,
-                decoration: new InputDecoration(
+              Container(
+                margin: EdgeInsets.only(top: 20.0),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueGrey),
+                ),
+                child: TextField(
+                  autofocus: false,
+                  decoration: new InputDecoration(
                     hintText: 'Descrição do grupo',
                     icon: Icon(
                       Icons.description,
                       color: Colors.blueGrey,
-                    )),
-                maxLines: 3,
-                controller: descController,
+                    ),
+                  ),
+                  maxLines: 3,
+                  controller: descController,
+                ),
               ),
             ],
           ),
         ),
-        floatingActionButton: _primaryButton());
+        floatingActionButton:
+            _isLoading ? LoadingIndicator() : _primaryButton());
   }
 
   @override
@@ -113,16 +117,15 @@ class _CriarGrupo extends State {
     var _img = await ImagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
       _image = _img;
-      print(_image.path);
+      //print(_image.path);
     });
   }
 
   uplpoadImage() async {
     _getCurrentUser().then((value) {
-      print(value);
+      // print(value);
     });
     File _img = File('icon/icon.png');
-    //print(_img.path.toString());
     final StorageReference firebaseStorageRef = FirebaseStorage.instance
         .ref()
         .child(nomeController.text + '_group_icon' + '.jpg');
@@ -139,37 +142,37 @@ class _CriarGrupo extends State {
   Widget _primaryButton() {
     return new FloatingActionButton(
       child: Icon(Icons.arrow_forward),
-      onPressed: () => uplpoadImage(),
+      onPressed: () {
+        if (_image != null) {
+          uplpoadImage();
+          setState(() {
+            _isLoading = true;
+          });
+        }
+      },
     );
   }
 
   // update(value) => value = '';
 
   void criar(String imgURL) {
-    String val;
     if (nomeController.text != '' &&
         descController.text != '' &&
         descController != null &&
         nomeController != null) {
       _getCurrentUser().then((value) {
-        print(value + 'j');
-        participantes[value] = '';
+        //print(value + 'j');
+        if (!participantes.containsKey(value)) participantes[value] = '';
         print(participantes);
-        grupos
-            .add({
-              'nome': nomeController.text,
-              'descricao': descController.text,
-              'participantes': participantes,
-              'admnistrador': value,
-              'icon': imgURL
-            })
-            .then((result) => {
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) {
-                    return Grupos();
-                  }))
-                })
-            .catchError((err) => print(err));
+        grupos.add({
+          'nome': nomeController.text,
+          'descricao': descController.text,
+          'participantes': participantes,
+          'admnistrador': value,
+          'icon': imgURL
+        }).then((result) {
+          Navigator.pushReplacementNamed(context, '/pages');
+        }).catchError((err) => print(err));
       });
     }
   }

@@ -2,37 +2,33 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:amigo_secretov2/pages/oAmigo.dart';
-import 'package:amigo_secretov2/utilities/FireUser.dart';
-import 'package:amigo_secretov2/widgets/adminButton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class Sorteio extends StatefulWidget {
+class SorteioDep extends StatefulWidget {
   Map<dynamic, dynamic> participantes;
-  String docId, groupName, admin;
+  String docId, groupName, userName;
 
-  Sorteio(this.groupName, Map<dynamic, dynamic> this.participantes,
-      String this.docId, this.admin);
+  SorteioDep(this.groupName, Map<dynamic, dynamic> this.participantes,
+      String this.docId, this.userName);
 
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
-    return _Sorteio(groupName, participantes, docId, admin);
+    return _SorteioDep(groupName, participantes, docId, userName);
   }
 }
 
-class _Sorteio extends State<Sorteio> {
+class _SorteioDep extends State<SorteioDep> {
   Map<dynamic, dynamic> participantes;
-  String docId, _groupName, _admin;
+  String docId, _groupName, userName;
 
-  _Sorteio(this._groupName, Map<dynamic, dynamic> this.participantes,
-      String this.docId, this._admin);
+  _SorteioDep(this._groupName, Map<dynamic, dynamic> this.participantes,
+      String this.docId, this.userName);
 
   CollectionReference grupos = Firestore.instance.collection('grupos');
-  FirebaseUser currentUser;
-  final FireUser _fireUser = new CurrentUser();
+  String currentUser;
 
   final CollectionReference utilizadores =
       Firestore.instance.collection("Utilizador");
@@ -53,9 +49,9 @@ class _Sorteio extends State<Sorteio> {
     return Scaffold(
         appBar: AppBar(
           title: Text("Particpantes"),
-          actions: <Widget>[
+          /* actions: <Widget>[
             AdminButton(_groupName, participantes.keys.toList(), docId)
-          ],
+          ],*/
         ),
         body: Column(
           children: <Widget>[
@@ -64,49 +60,43 @@ class _Sorteio extends State<Sorteio> {
               itemCount: amigos.length,
               itemBuilder: (context, index) {
                 String key = amigos[index];
-                //String value = participantes.values.elementAt(index);
                 //print(key);
                 return FlatButton(
                   onPressed: () {
                     setState(
                       () {
-                        _fireUser.getCurrentUser().then((user) {
-                          if (key != user) {
-                            participantes.update(user, (value) => key);
-                            //print(participantes);
-                            grupos
-                                .document(docId)
-                                .updateData({'participantes': participantes});
-                            Navigator.pushReplacement(context,
-                                MaterialPageRoute(builder: (context) {
-                              return OAmigo(user, participantes[user]);
-                            }));
-                          } else {
-                            Platform.isIOS
-                                ? CupertinoAlertDialog(
-                                    title: Text(title),
-                                    content: Text(content),
-                                  )
-                                : AlertDialog(
-                                    title: Text(title),
-                                    content: Text(content),
-                                  );
-                          }
-                        });
+                        if (key != userName) {
+                          participantes.update(userName, (value) => key);
+                          //print(participantes);
+                          grupos
+                              .document(docId)
+                              .updateData({'participantes': participantes});
+                          Navigator.pushReplacement(context,
+                              MaterialPageRoute(builder: (context) {
+                            return OAmigo(userName, participantes[userName]);
+                          }));
+                        } else {
+                          Platform.isIOS
+                              ? CupertinoAlertDialog(
+                                  title: Text(title),
+                                  content: Text(content),
+                                )
+                              : AlertDialog(
+                                  title: Text(title),
+                                  content: Text(content),
+                                );
+                        }
                       },
                     );
                   },
                   child: Row(
                     children: <Widget>[
-                      Text('AS' + codes[index].toString()),
+                      new Text('AS' + codes[index].toString())
                     ],
                   ),
-                  padding: EdgeInsets.all(20.0),
                 );
               },
-              separatorBuilder: (context, index) => Divider(
-                height: 1,
-              ),
+              separatorBuilder: (context, index) => Divider(),
             ))
           ],
         ));

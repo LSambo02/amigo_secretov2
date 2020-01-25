@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.lsambo02.amigo_secretov2">
+    package="com.lsambo02.amigo_secretov2"
+    >
 
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
@@ -8,8 +9,8 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="amigo_secretov2"
-        android:icon="@mipmap/ic_launcher"
+        android:label="Roleta Russa"
+        android:icon='@mipmap/ic_launcher'
         >
         <activity
             android:name=".MainActivity"

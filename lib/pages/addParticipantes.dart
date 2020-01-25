@@ -1,21 +1,29 @@
-import 'package:amigo_secretov2/pages/create_group.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class ParticipantesNew extends StatefulWidget {
+class AddParticipantes extends StatefulWidget {
+  Map<String, String> participantes = new Map();
+  String docID;
+
+  AddParticipantes(this.participantes, this.docID);
+
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
-    return _ParticipantesNew();
+    return _AddParticipantes(this.participantes, this.docID);
   }
 }
 
-class _ParticipantesNew extends State {
-  CollectionReference utilizadores =
-      Firestore.instance.collection('utilizadores');
+class _AddParticipantes extends State {
+  CollectionReference grupos = Firestore.instance.collection('grupos');
 
   Map<String, String> participantes = new Map();
+  String _docID;
+  _AddParticipantes(this.participantes, this._docID);
+
+  CollectionReference utilizadores =
+      Firestore.instance.collection('utilizadores');
 
   int _pressed = 0;
   IconData _outline = Icons.label_outline;
@@ -49,29 +57,41 @@ class _ParticipantesNew extends State {
                       itemBuilder: (context, index) => _buildListTitle(
                           context, snapshot.data.documents[index], index)));
             }),
-        Container(
-          padding: EdgeInsets.only(bottom: 50.0),
-          child: RaisedButton(
-              child: Text('Prosseguir'),
-              elevation: 5.0,
-              shape: new RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0)),
-              onPressed: () {
-                _getCurrentUser().then((onValue) {
-                  print(onValue);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return CriarGrupo(participantes);
-                  }));
-                });
-                /*FutureBuilder(
-                  builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    participantes[snapshot.data.toString()] = '';
-                    print(snapshot.data.toString());
+        Column(
+          children: <Widget>[
+            Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    padding: EdgeInsets.only(bottom: 30.0),
+                    child: RaisedButton(
+                        child: Text('Confirmar'),
+                        elevation: 5.0,
+                        shape: new RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0)),
+                        onPressed: () {
+                          _getCurrentUser().then((onValue) {
+                            print(onValue);
+                            grupos
+                                .document(_docID)
+                                .updateData({'participantes': participantes});
+                          });
+                          /*FutureBuilder(
+                            builder: (BuildContext context, AsyncSnapshot snapshot) {
+                              participantes[snapshot.data.toString()] = '';
+                              print(snapshot.data.toString());
 
-                  },
-                  future: _getCurrentUser(),
-                );*/
-              }),
+                            },
+                            future: _getCurrentUser(),
+                          );*/
+                        }),
+                    color: Colors.transparent,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ]),
     );

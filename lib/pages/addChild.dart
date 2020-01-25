@@ -1,56 +1,56 @@
 import 'dart:io';
 
-import 'package:amigo_secretov2/pages/login.dart';
-import 'package:amigo_secretov2/pages/pagesnavbar.dart';
-import 'package:amigo_secretov2/utilities/sharedPreferences.dart';
+import 'package:amigo_secretov2/widgets/loadingIndicator.dart';
 import 'package:amigo_secretov2/widgets/secondaryButton.dart';
-import 'package:amigo_secretov2/widgets/showAlertDialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../widgets/loadingIndicator.dart';
 import '../widgets/primaryButton.dart';
+import 'pagesnavbar.dart';
 
-class CriarUser extends StatefulWidget {
+class Addchild extends StatefulWidget {
+  String docID;
+  List childs;
+  Addchild(this.docID, this.childs);
+
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
-    return _CriarUser();
+    return _AddChild(docID, childs);
   }
 }
 
 enum FormMode { LOGIN, SIGNUP }
 
-class _CriarUser extends State {
+class _AddChild extends State {
+  String _docID;
+
+  List _childs;
+  _AddChild(this._docID, this._childs);
   final _formKey = new GlobalKey<FormState>();
   String nome, apelido, pass, pass1, email, nickname;
   File _image;
   CollectionReference utilizadores =
       Firestore.instance.collection("utilizadores");
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseUser currentUser;
-
-  FormMode _formMode = FormMode.SIGNUP;
 
   bool _isIos;
   bool _isLoading = false;
   String _errorMessage;
   String profileURL;
 
-  List childs = new List();
-
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-
     return Scaffold(
         appBar: AppBar(
-          leading: _showLogo(),
-          title: Text('Criar conta'),
+          actions: <Widget>[_showLogo()],
+          title: Text('Adicionar dependente'),
         ),
         body: Container(
           margin: EdgeInsets.all(30.0),
@@ -83,9 +83,6 @@ class _CriarUser extends State {
                   nameInput(),
                   apelidoInput(),
                   usernameInput(),
-                  emailInput(),
-                  passwordInput(),
-                  password1Input(),
                   _isLoading
                       ? LoadingIndicator()
                       : PrimaryButton('Cadastrar', _validateAndSubmit),
@@ -122,8 +119,9 @@ class _CriarUser extends State {
               Icons.lock,
               color: Colors.blueGrey,
             )),
-        validator: (value) =>
-            value.isEmpty ? 'A password deve ser igual' : null,
+        validator: (value) => (value.isEmpty && value == pass)
+            ? 'A password deve ser igual'
+            : null,
         onSaved: (value) => pass1 = value.trim(),
       ),
     );
@@ -196,9 +194,8 @@ class _CriarUser extends State {
               Icons.person,
               color: Colors.blueGrey,
             )),
-        validator: (value) => !value.contains('@') && !value.contains('.')
-            ? 'Insira um email válido'
-            : null,
+        validator: (value) =>
+            !(EmailValidator.validate(value)) ? 'Insira um email válido' : null,
         onSaved: (value) => email = value.trim(),
       ),
     );
@@ -217,7 +214,7 @@ class _CriarUser extends State {
               color: Colors.blueGrey,
             )),
         validator: (value) => value.length < 6
-            ? 'Password deve conter no mínimo 6 caracteres'
+            ? 'Password deve conter no mínimo 4 caracteres'
             : null,
         onSaved: (value) => pass = value.trim(),
       ),
@@ -232,8 +229,7 @@ class _CriarUser extends State {
     if (_validateAndSave()) {
       String userId = nickname;
       try {
-        //uplpoadImage();
-        _criarWithmailPass(nickname, email, pass);
+        uplpoadImage();
         print('Signed in: $userId');
         setState(() {
           _isLoading = true;
@@ -269,96 +265,50 @@ class _CriarUser extends State {
   }
 
   uplpoadImage() async {
-    File _img = File('icon/icon.png');
+    File _img = File('../icon/icon.png');
     //print(_img.path.toString());
     //print(nome.toString() + "jssss");
-    //_criarWithmailPass(nickname, email, pass);
-    //_signInWithEmailPass(email, pass);
-
-    print('im in');
+    // print('im in');
     final StorageReference firebaseStorageRef =
         FirebaseStorage.instance.ref().child(nickname + '_profilePic' + '.jpg');
     StorageUploadTask task = _image != null
         ? firebaseStorageRef.putFile(_image)
         : firebaseStorageRef.putFile(_img);
-    await (await task.onComplete)
-        .ref
-        .getDownloadURL()
-        .then((value) => criar(value.toString()));
+    await (await task.onComplete).ref.getDownloadURL().then((value) {
+      profileURL = value.toString();
+
+      criar(value.toString());
+    }).then((value) => CircularProgressIndicator());
   }
 
   void criar(String picURL) {
-    utilizadores
-        .add({
-          'username': nickname,
-          'nome': nome,
-          'apelido': apelido,
-          'email': email,
-          'profile_picture': picURL,
-          'childs': childs
-        })
-        .then((result) => {
-              print(currentUser.toString() + " check"),
-              FirebaseAuth.instance.currentUser().then((value) {
-                UserUpdateInfo updateUser = UserUpdateInfo();
-                updateUser.photoUrl = picURL;
-                value.updateProfile(updateUser);
-              }),
-              currentUser.toString() != null
-                  ? _signInWithEmailPass(email, pass)
-                  : Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) {
-                      return Login();
-                    }))
-            })
-        .catchError((err) => print(err));
+    List childs = new List();
+
+    if (_childs.length != null)
+      for (int i = 0; i < _childs.length; i++) {
+        childs.add(_childs[i]);
+      }
+
+    utilizadores.document(_docID).get().then((DocumentSnapshot dS) {
+      utilizadores
+          .add({
+            'username': nickname,
+            'nome': nome,
+            'apelido': apelido,
+            'profile_picture': picURL,
+            'dependencia': dS.data['username']
+          })
+          .then((result) => {
+                childs.add(nickname),
+                utilizadores.document(_docID).updateData({'childs': childs}),
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) {
+                  return Pages();
+                }))
+              })
+          .catchError((err) => print(err));
+    });
 
     //print(pass);
-  }
-
-  Future<String> _criarWithmailPass(
-      String username, String email, String pass) async {
-    final FirebaseUser user = (await _auth.createUserWithEmailAndPassword(
-            email: email, password: pass))
-        .user;
-
-    if (user != null) {
-      await user.sendEmailVerification().then((onValue) {
-        user.isEmailVerified
-            ? print(user.email)
-            : ShowAlertDialog().showAlertDialog(
-                context,
-                'Verifique seu email e Password',
-                'Verifique seu endereço de email \n Mandamos-lhe um email de verficação');
-        uplpoadImage();
-        FirebaseAuth.instance.currentUser().then((value) {
-          UserUpdateInfo updateUser = UserUpdateInfo();
-          updateUser.displayName = username;
-          value.updateProfile(updateUser);
-        });
-        return user.uid;
-      }).catchError((onError) {
-        setState(() {
-          _isLoading = false;
-        });
-        user.delete();
-        ShowAlertDialog().showAlertDialog(context, 'Email inválido',
-            'Certifique-se de introduzir um email válido e que tenha acesso');
-      });
-    }
-  }
-
-  Future<FirebaseUser> _signInWithEmailPass(String email, String pass) async {
-    final FirebaseUser currentUser = (await _auth.signInWithEmailAndPassword(
-      email: email,
-      password: pass,
-    ))
-        .user;
-    if (currentUser != null) {
-      UserState().save(true);
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
-        return Pages();
-      }));
-    }
   }
 }

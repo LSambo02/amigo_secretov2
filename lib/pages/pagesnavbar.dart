@@ -41,6 +41,4 @@ class _Pages extends State {
           ],
         ));
   }
-
-  Widget barText() {}
 }
