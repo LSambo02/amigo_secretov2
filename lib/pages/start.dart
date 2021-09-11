@@ -16,7 +16,7 @@ class Start extends StatefulWidget {
 class _Start extends State {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  FirebaseUser currentUser;
+  User currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -70,8 +70,8 @@ class _Start extends State {
   }
 
 //TODO: CREATE A _GETCURRENTUSER CLASS FOR ALL WIDGETS
-  Future<FirebaseUser> _getCurrentUser() async {
-    currentUser = await _auth.currentUser();
+  Future<User> _getCurrentUser() async {
+    currentUser = await _auth.currentUser;
     //print('Hello ' + currentUser.displayName.toString());
     return currentUser;
   }

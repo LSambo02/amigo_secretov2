@@ -1,15 +1,14 @@
 import 'package:amigo_secretov2/pages/addChild.dart';
-import 'package:amigo_secretov2/pages/groups_dependentes.dart';
 import 'package:amigo_secretov2/utilities/FireUser.dart';
-import 'package:amigo_secretov2/widgets/showAlertDialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/LogOutButon.dart';
+import 'groups_dependentes.dart';
 
 class Perfil extends StatefulWidget {
-  FirebaseUser currentUser;
+  User currentUser;
 
   //Perfil(currentUser);
 
@@ -22,7 +21,7 @@ class Perfil extends StatefulWidget {
 
 class _Perfil extends State {
   CollectionReference utilizadores =
-      Firestore.instance.collection('utilizadores');
+      FirebaseFirestore.instance.collection('utilizadores');
 
   final FireUser _currentUser = new CurrentUser();
 
@@ -50,85 +49,49 @@ class _Perfil extends State {
                       (BuildContext context, AsyncSnapshot<String> snapshot) {
                     if (!snapshot.hasData)
                       return const Center(child: CircularProgressIndicator());
-                    switch (snapshot.connectionState) {
-                      case ConnectionState.done:
-                        return snapshot.data != null
-                            ? CircleAvatar(
-                                radius: 80,
-                                foregroundColor: Colors.blueGrey,
-                                child: ClipOval(
-                                  child: SizedBox(
-                                    height: 150,
-                                    width: 150,
-                                    child: Image.network(
-                                      snapshot.data,
-                                      fit: BoxFit.fill,
-                                    ),
-                                  ),
+
+                    return snapshot.data != null
+                        ? CircleAvatar(
+                            radius: 80,
+                            foregroundColor: Colors.blueGrey,
+                            child: ClipOval(
+                              child: SizedBox(
+                                height: 150,
+                                width: 150,
+                                child: Image.network(
+                                  snapshot.data,
+                                  fit: BoxFit.fill,
                                 ),
-                              )
-                            : CircleAvatar(
-                                radius: 80,
-                                foregroundColor: Colors.blueGrey,
-                                child: ClipOval(
-                                  child: SizedBox(
-                                    height: 150,
-                                    width: 150,
-                                    child: Image.asset(
-                                      'icon/icon.png',
-                                      fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                ),
-                              );
-                      case ConnectionState.none:
-                        return CircleAvatar(
-                          radius: 80,
-                          foregroundColor: Colors.blueGrey,
-                          child: ClipOval(
-                            child: SizedBox(
-                              height: 150,
-                              width: 150,
-                              child: Image.asset(
-                                'icon/icon.png',
-                                fit: BoxFit.fill,
                               ),
                             ),
-                          ),
-                        );
-                        break;
-                      case ConnectionState.waiting:
-                        return CircularProgressIndicator();
-                        break;
-                      case ConnectionState.active:
-                        // TODO: Handle this case.
-                        break;
-                    }
+                          )
+                        : CircleAvatar(
+                            radius: 80,
+                            foregroundColor: Colors.blueGrey,
+                            child: ClipOval(
+                              child: SizedBox(
+                                height: 150,
+                                width: 150,
+                                child: Image.asset(
+                                  'icon/icon.png',
+                                  fit: BoxFit.fill,
+                                ),
+                              ),
+                            ),
+                          );
                   },
                   future: _currentUser.getUserPicURL(),
                 ),
                 FutureBuilder(
                   builder:
                       (BuildContext context, AsyncSnapshot<String> snapshot) {
-                    switch (snapshot.connectionState) {
-                      case ConnectionState.done:
-                        return Text(
-                          snapshot.data.toString(),
-                          style: TextStyle(
-                              fontFamily: 'KhalidPersonal',
-                              color: Colors.black,
-                              fontSize: 40),
-                        );
-                      case ConnectionState.none:
-                        // TODO: Handle this case.
-                        break;
-                      case ConnectionState.waiting:
-                        return CircularProgressIndicator();
-                        break;
-                      case ConnectionState.active:
-                        // TODO: Handle this case.
-                        break;
-                    }
+                    return Text(
+                      snapshot.data.toString(),
+                      style: TextStyle(
+                          fontFamily: 'KhalidPersonal',
+                          color: Colors.black,
+                          fontSize: 40),
+                    );
                   },
                   future: _currentUser.getCurrentUser(),
                 ),
@@ -148,15 +111,20 @@ class _Perfil extends State {
               builder: (context, snapshot) {
                 if (!snapshot.hasData)
                   return const Center(child: CircularProgressIndicator());
+                if (snapshot.hasError) {
+                  return Center(child: Text('ERRO AO CARREGAR DEPENDENTES'));
+                }
+
+                // print(snapshot.data.docs);
                 return Expanded(
                   child: Column(children: <Widget>[
                     Expanded(
-                      child: snapshot.data.documents.length > 0
+                      child: snapshot.data.docs.length > 0
                           ? ListView.separated(
-                              itemCount: snapshot.data.documents.length,
+                              itemCount: snapshot.data.docs.length,
                               itemBuilder: (context, index) => _buildListTitle(
                                 context,
-                                snapshot.data.documents[index],
+                                snapshot.data.docs[index],
                               ),
                               separatorBuilder: (context, index) => Divider(
                                 height: 0.0,
@@ -172,9 +140,9 @@ class _Perfil extends State {
                     ),
                     Expanded(
                       child: ListView.builder(
-                          itemCount: snapshot.data.documents.length,
+                          itemCount: snapshot.data.docs.length,
                           itemBuilder: (context, index) =>
-                              _setFlat(context, snapshot.data.documents[index])
+                              _setFlat(context, snapshot.data.docs[index])
                           /**/
                           ),
                     )
@@ -193,42 +161,28 @@ class _Perfil extends State {
     String _content = 'Não foi possível concluir a operação';
     String docID;
     List childs;
+    // print(document['username']);
 
     return FutureBuilder(
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        switch (snapshot.connectionState) {
-          case ConnectionState.done:
-            if (document['username'].toString() == snapshot.data.toString()) {
-              docID = utilizadores
-                  .document(document.documentID)
-                  .documentID
-                  .toString();
-              childs = document.data['childs'];
-              //print(childs);
-            }
-            return document['username'].toString() == snapshot.data.toString()
-                ? FlatButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return Addchild(docID, childs);
-                        }));
-                      });
-                    },
-                    icon: Icon(Icons.add),
-                    label: Text('Adicionar dependente'))
-                : Divider(color: Colors.transparent, height: 0.0);
-          case ConnectionState.none:
-            // TODO: Handle this case.
-            break;
-          case ConnectionState.waiting:
-            return CircularProgressIndicator();
-            break;
-          case ConnectionState.active:
-            // TODO: Handle this case.
-            break;
+        if (document['username'].toString() == snapshot.data.toString()) {
+          docID = utilizadores.doc(document.id).id.toString();
+          childs = document.get('childs');
+          //print(childs);
         }
+        return document['username'].toString() == snapshot.data.toString()
+            ? TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return Addchild(docID, childs);
+                    }));
+                  });
+                },
+                icon: Icon(Icons.add),
+                label: Text('Adicionar dependente'))
+            : Divider(color: Colors.transparent, height: 0.0);
       },
       future: _currentUser.getCurrentUser(),
     );
@@ -239,59 +193,61 @@ class _Perfil extends State {
     //print(_participantes.keys);
     String _title = 'Erro de conexão';
     String _content = 'Não foi possível concluir a operação';
-
+    // print(document.get('dependencia'));
     return FutureBuilder(
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        if (!snapshot.hasData)
-          return const Center(child: CircularProgressIndicator());
-        switch (snapshot.connectionState) {
-          case ConnectionState.done:
-            return document['dependencia'].toString() ==
-                    snapshot.data.toString()
-                ? ListTile(
-                    leading: document['profile_picture'] != null
-                        ? CircleAvatar(
-                            radius: 40,
-                            foregroundColor: Colors.blueGrey,
-                            child: ClipOval(
-                              child: SizedBox(
-                                height: 70,
-                                width: 55,
-                                child: Image.network(
-                                  document['profile_picture'],
-                                  fit: BoxFit.fill,
-                                ),
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('ERRO AO CARREGAR DEPENDENTES'),
+          );
+        }
+
+        try {
+          return document.get('dependencia').toString() ==
+                  snapshot.data.toString()
+              ? ListTile(
+                  leading: document.get('profile_picture') != null
+                      ? CircleAvatar(
+                          radius: 40,
+                          foregroundColor: Colors.blueGrey,
+                          child: ClipOval(
+                            child: SizedBox(
+                              height: 70,
+                              width: 55,
+                              child: Image.network(
+                                document.get('profile_picture'),
+                                fit: BoxFit.fill,
                               ),
                             ),
-                          )
-                        : ClipOval(
-                            child: Image.asset('icon/icon.png',
-                                fit: BoxFit.fill, height: 70, width: 55),
                           ),
-                    title: Container(
-                        child: Text(
-                      document.data['username'],
-                    )),
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return GruposDep(document.data['username'].toString());
-                      }));
-                    },
-                    contentPadding: EdgeInsets.only(top: 5.0, bottom: 5.0))
-                : Divider(
-                    height: 0.0,
-                  );
-          case ConnectionState.none:
-            return Container();
-            break;
-          case ConnectionState.waiting:
-            return CircularProgressIndicator();
-            break;
-          case ConnectionState.active:
-            return ShowAlertDialog().showAlertDialog(context, _title, _content);
-            break;
+                        )
+                      : ClipOval(
+                          child: Image.asset('icon/icon.png',
+                              fit: BoxFit.fill, height: 70, width: 55),
+                        ),
+                  title: Container(
+                      child: Text(
+                    document.get('username'),
+                  )),
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return GruposDep(document.get('username').toString());
+                    }));
+                  },
+                  contentPadding: EdgeInsets.only(top: 5.0, bottom: 5.0))
+              : Divider(
+                  height: 0.0,
+                );
+        } catch (e) {
+          return Divider(
+            height: 0.0,
+          );
         }
+
+        return Divider(
+          height: 0.0,
+        );
       },
       future: CurrentUser().getCurrentUser(),
     );

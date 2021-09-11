@@ -6,31 +6,35 @@ import 'package:flutter/material.dart';
 class ShowAlertDialogDoubleOption {
   //bool isYes;
   showAlertDialog(
-      BuildContext context, _title, _content, _action1(), _action2()) {
+      {@required BuildContext context,
+      @required title,
+      @required content,
+      action1(),
+      action2()}) {
     // set up the button
     Widget okButton = FlatButton(
       child: Text("OK"),
       onPressed: () {
-        _action1();
+        action1();
         Navigator.of(context).pop();
       },
     );
     Widget cancelButton = FlatButton(
       child: Text("Cancel"),
       onPressed: () {
-        _action2();
+        action2();
         Navigator.of(context).pop(false);
       },
     );
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
-      title: Text(_title),
-      content: Text(_content),
+      title: Text(title),
+      content: Text(content),
       actions: [okButton, cancelButton],
     );
     CupertinoAlertDialog c_alert = CupertinoAlertDialog(
-      title: Text(_title),
-      content: Text(_content),
+      title: Text(title),
+      content: Text(content),
       actions: [okButton, cancelButton],
     );
     // show the dialog

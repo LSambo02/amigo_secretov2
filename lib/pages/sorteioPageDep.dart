@@ -5,6 +5,8 @@ import 'package:amigo_secretov2/pages/oAmigo.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
+import 'package:rxdart/rxdart.dart';
 
 class SorteioDep extends StatefulWidget {
   Map<dynamic, dynamic> participantes;
@@ -23,18 +25,25 @@ class SorteioDep extends StatefulWidget {
 class _SorteioDep extends State<SorteioDep> {
   Map<dynamic, dynamic> participantes;
   String docId, _groupName, userName;
+  BehaviorSubject<int> selected = BehaviorSubject<int>();
 
   _SorteioDep(this._groupName, Map<dynamic, dynamic> this.participantes,
       String this.docId, this.userName);
 
-  CollectionReference grupos = Firestore.instance.collection('grupos');
+  CollectionReference grupos = FirebaseFirestore.instance.collection('grupos');
   String currentUser;
 
   final CollectionReference utilizadores =
-      Firestore.instance.collection("Utilizador");
+      FirebaseFirestore.instance.collection("Utilizador");
 
   Random rndm = new Random();
   List amigos = [];
+
+  @override
+  void dispose() {
+    selected.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +53,9 @@ class _SorteioDep extends State<SorteioDep> {
     codes.shuffle();
     String title = 'Erro de conexão';
     String content = 'Não foi possível concluir a operação';
-    //print(docId);
+    String _amigo = '';
+
+    List items = participantes.keys.toList();
 
     return Scaffold(
         appBar: AppBar(
@@ -53,52 +64,97 @@ class _SorteioDep extends State<SorteioDep> {
             AdminButton(_groupName, participantes.keys.toList(), docId)
           ],*/
         ),
-        body: Column(
-          children: <Widget>[
-            new Expanded(
-                child: ListView.separated(
-              itemCount: amigos.length,
-              itemBuilder: (context, index) {
-                String key = amigos[index];
-                //print(key);
-                return FlatButton(
-                  onPressed: () {
-                    setState(
-                      () {
-                        if (key != userName) {
-                          participantes.update(userName, (value) => key);
-                          //print(participantes);
-                          grupos
-                              .document(docId)
-                              .updateData({'participantes': participantes});
-                          Navigator.pushReplacement(context,
-                              MaterialPageRoute(builder: (context) {
-                            return OAmigo(userName, participantes[userName]);
-                          }));
-                        } else {
-                          Platform.isIOS
-                              ? CupertinoAlertDialog(
-                                  title: Text(title),
-                                  content: Text(content),
+        body: SingleChildScrollView(
+          child: Center(
+            heightFactor: 0.8,
+            child: Column(
+              children: [
+                Container(
+                  height: MediaQuery.of(context).size.height / 1.1,
+                  width: MediaQuery.of(context).size.width / 1.1,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selected.add(
+                          Fortune.randomInt(0, amigos.length),
+                        );
+                        Stream stream = selected.stream;
+                        stream.listen((value) {
+                          print('Value from controller: ${amigos[value]}');
+                          String key = amigos[value];
+                          _amigo == ''
+                              ? setState(
+                                  () {
+                                    // _fireUser.getCurrentUser().then((user) {
+                                    if (key != userName) {
+                                      participantes.update(
+                                          userName, (value) => key);
+                                      //print(participantes);
+                                      grupos.doc(docId).update(
+                                          {'participantes': participantes});
+                                      Navigator.pushReplacement(context,
+                                          MaterialPageRoute(builder: (context) {
+                                        return OAmigo(
+                                            userName, participantes[userName]);
+                                      }));
+                                    } else {
+                                      Platform.isIOS
+                                          ? CupertinoAlertDialog(
+                                              title: Text(title),
+                                              content: Text(content),
+                                            )
+                                          : AlertDialog(
+                                              title: Text(title),
+                                              content: Text(content),
+                                            );
+                                    }
+                                    // });
+                                  },
                                 )
-                              : AlertDialog(
-                                  title: Text(title),
-                                  content: Text(content),
-                                );
-                        }
-                      },
-                    );
-                  },
-                  child: Row(
-                    children: <Widget>[
-                      new Text('AS' + codes[index].toString())
-                    ],
+                              : null;
+                        });
+                      });
+                    },
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: FortuneWheel(
+                            animateFirst: false,
+                            duration: Duration(seconds: 7),
+                            selected: selected.stream,
+                            items: [
+                              for (var it in amigos)
+                                FortuneItem(
+                                    child: Text(
+                                  it,
+                                  style: TextStyle(
+                                      fontSize: 19, color: Colors.black),
+                                )),
+                            ],
+                          ),
+                        ),
+                        _amigo != ""
+                            ? RichText(
+                                text: TextSpan(
+                                    style:
+                                        TextStyle(color: Colors.blueGrey[700]),
+                                    text: 'O seu Amigo é:\n',
+                                    children: [
+                                      TextSpan(
+                                          text: _amigo,
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w700))
+                                    ]),
+                              )
+                            : Container()
+                      ],
+                    ),
                   ),
-                );
-              },
-              separatorBuilder: (context, index) => Divider(),
-            ))
-          ],
+                ),
+              ],
+            ),
+          ),
         ));
   }
 
@@ -112,11 +168,11 @@ class _SorteioDep extends State<SorteioDep> {
     print(_amigos);*/
 
     for (int i = 0; i < _chaves.length; i++) {
-      if (!_amigos.contains(_chaves[i])) {
-        _res.add(_chaves[i]);
-        //print(_chaves[i]);
-        //_chaves.remove(_chaves[i]);
-      }
+      // if (!_amigos.contains(_chaves[i])) {
+      _res.add(_chaves[i]);
+      //print(_chaves[i]);
+      //_chaves.remove(_chaves[i]);
+      // }
     }
     //print(chave);
     //print(_res);

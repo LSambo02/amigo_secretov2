@@ -4,7 +4,7 @@ class User {
   String nome, apelido, username, email, password;
   int numero;
   CollectionReference utilizadores =
-      Firestore.instance.collection("utilizadores");
+  FirebaseFirestore.instance.collection("utilizadores");
 
   User(this.nome, this.apelido, this.username, this.email, this.password,
       this.numero);

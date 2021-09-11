@@ -29,10 +29,10 @@ class _CriarUser extends State {
   String nome, apelido, pass, pass1, email, nickname;
   File _image;
   CollectionReference utilizadores =
-      Firestore.instance.collection("utilizadores");
+      FirebaseFirestore.instance.collection("utilizadores");
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  FirebaseUser currentUser;
+  User currentUser;
 
   FormMode _formMode = FormMode.SIGNUP;
 
@@ -262,13 +262,15 @@ class _CriarUser extends State {
 
   Future getImage() async {
     File image;
-    image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    image = (await ImagePicker.platform.pickImage(source: ImageSource.gallery)) as File;
     setState(() {
       _image = image;
     });
   }
 
   uplpoadImage() async {
+    DateTime now = DateTime.now();
+    String dateNow = now.millisecondsSinceEpoch.toString();
     File _img = File('icon/icon.png');
     //print(_img.path.toString());
     //print(nome.toString() + "jssss");
@@ -276,12 +278,12 @@ class _CriarUser extends State {
     //_signInWithEmailPass(email, pass);
 
     print('im in');
-    final StorageReference firebaseStorageRef =
-        FirebaseStorage.instance.ref().child(nickname + '_profilePic' + '.jpg');
-    StorageUploadTask task = _image != null
+    final Reference firebaseStorageRef =
+        FirebaseStorage.instance.ref().child(nickname + '_profilePic' + dateNow+'.jpg');
+    UploadTask task = _image != null
         ? firebaseStorageRef.putFile(_image)
         : firebaseStorageRef.putFile(_img);
-    await (await task.onComplete)
+    await (await task.whenComplete((){}))
         .ref
         .getDownloadURL()
         .then((value) => criar(value.toString()));
@@ -299,11 +301,7 @@ class _CriarUser extends State {
         })
         .then((result) => {
               print(currentUser.toString() + " check"),
-              FirebaseAuth.instance.currentUser().then((value) {
-                UserUpdateInfo updateUser = UserUpdateInfo();
-                updateUser.photoUrl = picURL;
-                value.updateProfile(updateUser);
-              }),
+              FirebaseAuth.instance.currentUser.updatePhotoURL(picURL),
               currentUser.toString() != null
                   ? _signInWithEmailPass(email, pass)
                   : Navigator.pushReplacement(context,
@@ -318,25 +316,23 @@ class _CriarUser extends State {
 
   Future<String> _criarWithmailPass(
       String username, String email, String pass) async {
-    final FirebaseUser user = (await _auth.createUserWithEmailAndPassword(
+    final User user = (await _auth.createUserWithEmailAndPassword(
             email: email, password: pass))
         .user;
 
     if (user != null) {
       await user.sendEmailVerification().then((onValue) {
-        user.isEmailVerified
+        user.emailVerified
             ? print(user.email)
             : ShowAlertDialog().showAlertDialog(
                 context,
                 'Verifique seu email e Password',
                 'Verifique seu endereço de email \n Mandamos-lhe um email de verficação');
         uplpoadImage();
-        FirebaseAuth.instance.currentUser().then((value) {
-          UserUpdateInfo updateUser = UserUpdateInfo();
-          updateUser.displayName = username;
-          value.updateProfile(updateUser);
-        });
-        return user.uid;
+        FirebaseAuth.instance.currentUser.updateDisplayName(username);
+          return user.uid;
+
+
       }).catchError((onError) {
         setState(() {
           _isLoading = false;
@@ -348,8 +344,8 @@ class _CriarUser extends State {
     }
   }
 
-  Future<FirebaseUser> _signInWithEmailPass(String email, String pass) async {
-    final FirebaseUser currentUser = (await _auth.signInWithEmailAndPassword(
+  Future<User> _signInWithEmailPass(String email, String pass) async {
+    final User currentUser = (await _auth.signInWithEmailAndPassword(
       email: email,
       password: pass,
     ))

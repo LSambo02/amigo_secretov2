@@ -11,21 +11,19 @@ class CurrentUser implements FireUser {
 
   @override
   Future<String> getCurrentUser() async {
-    final currentUser = await _auth.currentUser();
+    final currentUser = _auth.currentUser;
     return currentUser.displayName.toString();
   }
 
   @override
   Future<String> getUser() async {
-    await _auth.currentUser().catchError((err) {
-      return null;
-    });
+    _auth.currentUser;
   }
 
   @override
   Future<String> getUserPicURL() async {
-    final currentUser = await _auth.currentUser();
-    return currentUser.photoUrl;
+    final currentUser =  _auth.currentUser;
+    return currentUser.photoURL;
   }
 
   @override

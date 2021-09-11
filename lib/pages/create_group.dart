@@ -29,8 +29,8 @@ class _CriarGrupo extends State {
 
   _CriarGrupo(Map<String, String> this.participantes);
 
-  CollectionReference grupos = Firestore.instance.collection('grupos');
-  FirebaseUser currentUser;
+  CollectionReference grupos = FirebaseFirestore.instance.collection('grupos');
+  User currentUser;
 
   final nomeController = new TextEditingController();
   final descController = new TextEditingController();
@@ -114,7 +114,9 @@ class _CriarGrupo extends State {
   }
 
   Future getImage() async {
-    var _img = await ImagePicker.pickImage(source: ImageSource.gallery);
+    File _img = File(
+        (await ImagePicker.platform.pickImage(source: ImageSource.gallery))
+            .path);
     setState(() {
       _image = _img;
       //print(_image.path);
@@ -122,17 +124,19 @@ class _CriarGrupo extends State {
   }
 
   uplpoadImage() async {
+    DateTime now = DateTime.now();
+    String dateNow = now.millisecondsSinceEpoch.toString();
     _getCurrentUser().then((value) {
       // print(value);
     });
     File _img = File('icon/icon.png');
-    final StorageReference firebaseStorageRef = FirebaseStorage.instance
+    final Reference firebaseStorageRef = FirebaseStorage.instance
         .ref()
-        .child(nomeController.text + '_group_icon' + '.jpg');
-    StorageUploadTask task = _image != null
+        .child(nomeController.text + '_group_icon' +dateNow+ '.jpg');
+    UploadTask task = _image != null
         ? firebaseStorageRef.putFile(_image)
         : firebaseStorageRef.putFile(_img);
-    var imgURL = await (await task.onComplete).ref.getDownloadURL();
+    var imgURL = await (await task.whenComplete(() {})).ref.getDownloadURL();
 
     group_iconURL = imgURL.toString();
 
@@ -171,6 +175,7 @@ class _CriarGrupo extends State {
           'admnistrador': value,
           'icon': imgURL
         }).then((result) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
           Navigator.pushReplacementNamed(context, '/pages');
         }).catchError((err) => print(err));
       });
@@ -178,7 +183,7 @@ class _CriarGrupo extends State {
   }
 
   Future<String> _getCurrentUser() async {
-    currentUser = await _auth.currentUser();
+    currentUser = await _auth.currentUser;
     //print('Hello ' + currentUser.displayName.toString());
     String username = currentUser.displayName.toString();
     return username;

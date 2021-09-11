@@ -2,10 +2,13 @@ import 'package:amigo_secretov2/pages/create_account.dart';
 import 'package:amigo_secretov2/pages/login.dart';
 import 'package:amigo_secretov2/pages/pagesnavbar.dart';
 import 'package:amigo_secretov2/utilities/sharedPreferences.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  Firebase.initializeApp();
+
   return runApp(Page());
 }
 

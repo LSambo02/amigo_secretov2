@@ -35,9 +35,9 @@ class _AddChild extends State {
   String nome, apelido, pass, pass1, email, nickname;
   File _image;
   CollectionReference utilizadores =
-      Firestore.instance.collection("utilizadores");
+      FirebaseFirestore.instance.collection("utilizadores");
 
-  FirebaseUser currentUser;
+  User currentUser;
 
   bool _isIos;
   bool _isLoading = false;
@@ -258,7 +258,8 @@ class _AddChild extends State {
 
   Future getImage() async {
     File image;
-    image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    image = (await ImagePicker.platform.pickImage(source: ImageSource.gallery))
+        as File;
     setState(() {
       _image = image;
     });
@@ -266,15 +267,19 @@ class _AddChild extends State {
 
   uplpoadImage() async {
     File _img = File('../icon/icon.png');
+    DateTime now = DateTime.now();
     //print(_img.path.toString());
     //print(nome.toString() + "jssss");
     // print('im in');
-    final StorageReference firebaseStorageRef =
-        FirebaseStorage.instance.ref().child(nickname + '_profilePic' + '.jpg');
-    StorageUploadTask task = _image != null
+    final Reference firebaseStorageRef = FirebaseStorage.instance.ref().child(
+        nickname +
+            '_profilePic' +
+            now.millisecondsSinceEpoch.toString() +
+            '.jpg');
+    UploadTask task = _image != null
         ? firebaseStorageRef.putFile(_image)
         : firebaseStorageRef.putFile(_img);
-    await (await task.onComplete).ref.getDownloadURL().then((value) {
+    await (await task.whenComplete(() {})).ref.getDownloadURL().then((value) {
       profileURL = value.toString();
 
       criar(value.toString());
@@ -289,18 +294,18 @@ class _AddChild extends State {
         childs.add(_childs[i]);
       }
 
-    utilizadores.document(_docID).get().then((DocumentSnapshot dS) {
+    utilizadores.doc(_docID).get().then((DocumentSnapshot dS) {
       utilizadores
           .add({
             'username': nickname,
             'nome': nome,
             'apelido': apelido,
             'profile_picture': picURL,
-            'dependencia': dS.data['username']
+            'dependencia': dS.get("username")
           })
           .then((result) => {
                 childs.add(nickname),
-                utilizadores.document(_docID).updateData({'childs': childs}),
+                utilizadores.doc(_docID).update({'childs': childs}),
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) {
                   return Pages();

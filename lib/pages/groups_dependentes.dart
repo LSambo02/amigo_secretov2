@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../widgets/LogOutButon.dart';
 import 'oAmigo.dart';
 
 class GruposDep extends StatefulWidget {
@@ -19,7 +18,7 @@ class GruposDep extends StatefulWidget {
 }
 
 class _GruposDep extends State {
-  CollectionReference grupos = Firestore.instance.collection('grupos');
+  CollectionReference grupos = FirebaseFirestore.instance.collection('grupos');
 
   final String _currentUser;
 
@@ -31,7 +30,9 @@ class _GruposDep extends State {
     Stream<QuerySnapshot> snapshots = grupos.snapshots();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Grupos'), actions: <Widget>[LogOutButton()]),
+      appBar: AppBar(
+        title: Text('Grupos'),
+      ),
       body: Container(
         margin: EdgeInsets.only(bottom: 2.0),
         child: Column(
@@ -43,9 +44,9 @@ class _GruposDep extends State {
                     return const Center(child: CircularProgressIndicator());
                   return new Expanded(
                       child: ListView.separated(
-                    itemCount: snapshot.data.documents.length,
-                    itemBuilder: (context, index) => _buildListTitle(
-                        context, snapshot.data.documents[index]),
+                    itemCount: snapshot.data.docs.length,
+                    itemBuilder: (context, index) =>
+                        _buildListTitle(context, snapshot.data.docs[index]),
                     separatorBuilder: (context, index) {
                       return Divider(
                         height: 0.1,
@@ -72,7 +73,7 @@ class _GruposDep extends State {
   }
 
   Widget _buildListTitle(BuildContext context, DocumentSnapshot document) {
-    Map<dynamic, dynamic> _participantes = document.data['participantes'];
+    Map<dynamic, dynamic> _participantes = document.get('participantes');
     String groupName = document['nome'].toString();
 
     if (_participantes.containsKey(_currentUser))
@@ -111,16 +112,12 @@ class _GruposDep extends State {
             style: TextStyle(fontSize: 18),
           )),
           onTap: () {
-            grupos
-                .document(document.documentID)
-                .get()
-                .then((DocumentSnapshot snapshot) {
+            grupos.doc(document.id).get().then((DocumentSnapshot snapshot) {
               Map<dynamic, dynamic> participantes =
-                  snapshot.data['participantes'];
+                  snapshot.get('participantes');
               //List part = participantes.keys;
               //print(grupos.document(document.documentID).documentID.toString());
-              String docId =
-                  grupos.document(document.documentID).documentID.toString();
+              String docId = grupos.doc(document.id).id.toString();
               //print(user);
               if (participantes[_currentUser] != '') {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {

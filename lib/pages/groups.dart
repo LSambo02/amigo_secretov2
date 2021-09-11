@@ -13,7 +13,7 @@ import 'oAmigo.dart';
 import 'sorteioPage.dart';
 
 class Grupos extends StatefulWidget {
-  FirebaseUser currentUser;
+  User currentUser;
 
   //Grupos(currentUser);
   @override
@@ -24,7 +24,7 @@ class Grupos extends StatefulWidget {
 }
 
 class _Grupos extends State {
-  CollectionReference grupos = Firestore.instance.collection('grupos');
+  CollectionReference grupos = FirebaseFirestore.instance.collection('grupos');
 
   final FireUser _currentUser = new CurrentUser();
 
@@ -35,6 +35,7 @@ class _Grupos extends State {
   Widget build(BuildContext context) {
     Stream<QuerySnapshot> snapshots = grupos.snapshots();
 
+    // FirebaseFirestore.instance.collection('utilizadores').
     return Scaffold(
       appBar: AppBar(title: Text('Grupos'), actions: <Widget>[LogOutButton()]),
       body: Container(
@@ -51,9 +52,9 @@ class _Grupos extends State {
                             const Center(child: CircularProgressIndicator()));
                   return new Expanded(
                       child: ListView.separated(
-                    itemCount: snapshot.data.documents.length,
-                    itemBuilder: (context, index) => _buildListTitle(
-                        context, snapshot.data.documents[index]),
+                    itemCount: snapshot.data.docs.length,
+                    itemBuilder: (context, index) =>
+                        _buildListTitle(context, snapshot.data.docs[index]),
                     separatorBuilder: (context, index) {
                       return Divider(
                         height: 0.1,
@@ -108,9 +109,9 @@ class _Grupos extends State {
   Widget listTile(DocumentSnapshot document, BuildContext context,
       AsyncSnapshot<String> snapshot) {
     //print(snapshot.data);
-    Map<dynamic, dynamic> _participantes = document.data['participantes'];
+    Map<dynamic, dynamic> _participantes = document.get('participantes');
     String groupName = document['nome'].toString();
-    String docId = grupos.document(document.documentID).documentID.toString();
+    String docId = grupos.doc(document.id).id.toString();
     Map<String, String> empty = new Map();
     String admin = document['admnistrador'].toString();
     var empty2;
@@ -154,16 +155,14 @@ class _Grupos extends State {
                         _participantes.forEach((k, v) => empty[k] = '');
                         //empty[admin] = '';
                         //print('El admin: ' + empty.toString());
-                        grupos
-                            .document(docId)
-                            .updateData({'participantes': empty});
+                        grupos.doc(docId).update({'participantes': empty});
                       } else if (result == 2) {
                         return ShowAlertDialogDoubleOption().showAlertDialog(
-                            context,
-                            'Deseja mesmo apagar o grupo?',
-                            'Esta acção é irreversível!',
-                            deleteGroup(docId),
-                            () {});
+                          context: context,
+                          title: 'Deseja mesmo apagar o grupo?',
+                          content: 'Esta acção é irreversível!',
+                          action1: () => deleteGroup(docId),
+                        );
                       } else if (result == 3) {
                         /*if (showAlertDialogDB.showAlertDialog(
                                 context,
@@ -204,12 +203,9 @@ class _Grupos extends State {
             style: TextStyle(fontSize: 18),
           )),
           onTap: () {
-            grupos
-                .document(document.documentID)
-                .get()
-                .then((DocumentSnapshot snapshot) {
+            grupos.doc(document.id).get().then((DocumentSnapshot snapshot) {
               Map<dynamic, dynamic> participantes =
-                  snapshot.data['participantes'];
+                  snapshot.get('participantes');
               //List part = participantes.keys;
               //print(grupos.document(document.documentID).documentID.toString());
 
@@ -236,7 +232,8 @@ class _Grupos extends State {
   }
 
   deleteGroup(docID) {
-    grupos.document(docID).delete();
+    // print('delete');
+    grupos.doc(docID).delete();
   }
 
   getGroups(DocumentSnapshot document, Map<dynamic, dynamic> _participantes,

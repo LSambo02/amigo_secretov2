@@ -19,12 +19,12 @@ class Login extends StatefulWidget {
 enum FormMode { LOGIN, SIGNUP }
 
 class _Login extends State {
-  FirebaseUser currentUser;
+  User currentUser;
   final _formKey = new GlobalKey<FormState>();
   final tFcontroller = new TextEditingController();
   final tFcontroller1 = new TextEditingController();
   CollectionReference utilizadores =
-      Firestore.instance.collection('utilizadores');
+      FirebaseFirestore.instance.collection('utilizadores');
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   final SharedUserState userState = new UserState();
@@ -207,7 +207,7 @@ class _Login extends State {
     }
   }
 
-  Future<FirebaseUser> _signInWithEmailPass(String email, String pass) async {
+  Future<User> _signInWithEmailPass(String email, String pass) async {
     print('pass');
     _getCurrentUser().then((user) async {
       if (user == null) {
@@ -227,7 +227,7 @@ class _Login extends State {
         }))
             .user;
         print(user);
-        if (user.isEmailVerified) {
+        if (user.emailVerified) {
           userState.save(true);
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) {
@@ -256,8 +256,8 @@ class _Login extends State {
     });
   }
 
-  Future<FirebaseUser> _getCurrentUser() async {
-    currentUser = await _auth.currentUser();
+  Future<User> _getCurrentUser() async {
+    currentUser = await _auth.currentUser;
     return currentUser;
   }
 
