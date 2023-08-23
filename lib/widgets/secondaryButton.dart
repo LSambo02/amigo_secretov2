@@ -17,7 +17,7 @@ class _SecondaryButton extends State<SecondaryButton> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return FlatButton(
+    return TextButton(
       child: new Text(_text,
           style: new TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300)),
       onPressed: () {

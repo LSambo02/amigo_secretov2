@@ -51,15 +51,26 @@ class _Sorteio extends State<Sorteio> {
     super.dispose();
   }
 
-  startTimer() async {
+  startTimer(user) async {
     var _duration = new Duration(seconds: 6);
-    return new Timer(_duration, () {});
+    return new Timer(_duration, () {
+      setState(() {
+        _amigo = user;
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    amigos = getFriend();
+
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     print(amigos.length);
-    amigos = getFriend();
     // List codes = new List.generate(
     //     amigos.length, (_) => rndm.nextInt(amigos.length + 30));
     // codes.shuffle();
@@ -72,7 +83,7 @@ class _Sorteio extends State<Sorteio> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Particpantes"),
+        title: Text("Gira a Roleta"),
         actions: <Widget>[AdminButton(_groupName, items, docId)],
       ),
       body: SingleChildScrollView(
@@ -106,7 +117,10 @@ class _Sorteio extends State<Sorteio> {
                                       //print(participantes);
                                       grupos.doc(docId).update(
                                           {'participantes': participantes});
-                                      _amigo = participantes[user];
+                                      var duration = Duration(seconds: 16);
+                                      startTimer(participantes[user]);
+                                      // return new Timer(duration,
+                                      //     _amigo = participantes[user]);
                                       // Navigator.pushReplacement(context,
                                       //     MaterialPageRoute(builder: (context) {
                                       //   return OAmigo(user, participantes[user]);
@@ -182,11 +196,11 @@ class _Sorteio extends State<Sorteio> {
     print(_amigos);*/
 
     for (int i = 0; i < _chaves.length; i++) {
-      // if (!_amigos.contains(_chaves[i])) {
-      _res.add(_chaves[i]);
-      //print(_chaves[i]);
-      //_chaves.remove(_chaves[i]);
-      // }
+      if (!_amigos.contains(_chaves[i])) {
+        _res.add(_chaves[i]);
+        //print(_chaves[i]);
+        // _chaves.remove(_chaves[i]);
+      }
     }
     //print(chave);
     //print(_res);

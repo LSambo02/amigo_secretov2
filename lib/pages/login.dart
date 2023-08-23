@@ -3,7 +3,6 @@ import 'package:amigo_secretov2/widgets/loadingIndicator.dart';
 import 'package:amigo_secretov2/widgets/showAlertDialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import './pagesnavbar.dart';
@@ -117,7 +116,7 @@ class _Login extends State {
   }
 
   Widget _secondaryButton() {
-    return new FlatButton(
+    return new TextButton(
       child: new Text('Criar uma conta',
           style: new TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300)),
       onPressed: () {
@@ -129,7 +128,7 @@ class _Login extends State {
   }
 
   Widget _forgetButton() {
-    return new FlatButton(
+    return new TextButton(
       child: new Text('Esqueceu password? ',
           style: new TextStyle(
               fontSize: 13.0,
@@ -160,11 +159,13 @@ class _Login extends State {
         padding: EdgeInsets.fromLTRB(0.0, 45.0, 0.0, 0.0),
         child: SizedBox(
           height: 40.0,
-          child: new RaisedButton(
-            elevation: 5.0,
-            shape: new RoundedRectangleBorder(
-                borderRadius: new BorderRadius.circular(30.0)),
-            color: Colors.blueGrey,
+          child: new ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              elevation: 5.0,
+              shape: new RoundedRectangleBorder(
+                  borderRadius: new BorderRadius.circular(30.0)),
+              backgroundColor: Colors.blueGrey,
+            ),
             child: new Text('Entrar',
                 style: new TextStyle(fontSize: 20.0, color: Colors.white)),
             onPressed: _validateAndSubmit,

@@ -33,7 +33,7 @@ class _AddChild extends State {
   _AddChild(this._docID, this._childs);
   final _formKey = new GlobalKey<FormState>();
   String nome, apelido, pass, pass1, email, nickname;
-  File _image;
+  PickedFile _image;
   CollectionReference utilizadores =
       FirebaseFirestore.instance.collection("utilizadores");
 
@@ -74,7 +74,7 @@ class _AddChild extends State {
                               width: 150,
                               height: 150,
                               child: Image.file(
-                                _image,
+                                File(_image.path),
                                 fit: BoxFit.fill,
                               ),
                             ),
@@ -257,9 +257,9 @@ class _AddChild extends State {
   }
 
   Future getImage() async {
-    File image;
+    PickedFile image;
     image = (await ImagePicker.platform.pickImage(source: ImageSource.gallery))
-        as File;
+        as PickedFile;
     setState(() {
       _image = image;
     });
@@ -277,7 +277,7 @@ class _AddChild extends State {
             now.millisecondsSinceEpoch.toString() +
             '.jpg');
     UploadTask task = _image != null
-        ? firebaseStorageRef.putFile(_image)
+        ? firebaseStorageRef.putFile(File(_image.path))
         : firebaseStorageRef.putFile(_img);
     await (await task.whenComplete(() {})).ref.getDownloadURL().then((value) {
       profileURL = value.toString();

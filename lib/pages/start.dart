@@ -30,7 +30,7 @@ class _Start extends State {
           child: Center(
             child: Column(
               children: <Widget>[
-                RaisedButton(
+                ElevatedButton(
                     child: Text('Criar conta'),
                     onPressed: () {
                       setState(() {
@@ -40,7 +40,7 @@ class _Start extends State {
                         }));
                       });
                     }),
-                RaisedButton(
+                ElevatedButton(
                     child: Text('Entrar'),
                     onPressed: () {
                       setState(() {

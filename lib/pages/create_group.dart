@@ -35,7 +35,7 @@ class _CriarGrupo extends State {
   final nomeController = new TextEditingController();
   final descController = new TextEditingController();
 
-  File _image;
+  PickedFile _image;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -64,7 +64,7 @@ class _CriarGrupo extends State {
                           width: 150,
                           height: 150,
                           child: Image.file(
-                            _image,
+                            File(_image.path),
                             fit: BoxFit.fill,
                           ),
                         ),
@@ -114,9 +114,8 @@ class _CriarGrupo extends State {
   }
 
   Future getImage() async {
-    File _img = File(
-        (await ImagePicker.platform.pickImage(source: ImageSource.gallery))
-            .path);
+    PickedFile _img =
+        await ImagePicker.platform.pickImage(source: ImageSource.gallery);
     setState(() {
       _image = _img;
       //print(_image.path);
@@ -132,9 +131,9 @@ class _CriarGrupo extends State {
     File _img = File('icon/icon.png');
     final Reference firebaseStorageRef = FirebaseStorage.instance
         .ref()
-        .child(nomeController.text + '_group_icon' +dateNow+ '.jpg');
+        .child(nomeController.text + '_group_icon' + dateNow + '.jpg');
     UploadTask task = _image != null
-        ? firebaseStorageRef.putFile(_image)
+        ? firebaseStorageRef.putFile(File(_image.path))
         : firebaseStorageRef.putFile(_img);
     var imgURL = await (await task.whenComplete(() {})).ref.getDownloadURL();
 

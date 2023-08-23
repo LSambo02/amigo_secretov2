@@ -1,12 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class ShowAlertDialog {
   Widget showAlertDialog(BuildContext context, _title, _content) {
     // set up the button
-    Widget okButton = FlatButton(
+    Widget okButton = TextButton(
       child: Text("OK"),
       onPressed: () {
         Navigator.of(context).pop();
@@ -31,7 +32,11 @@ class ShowAlertDialog {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Platform.isAndroid ? alert : c_alert;
+        return kIsWeb
+            ? alert
+            : Platform.isIOS
+                ? alert
+                : c_alert;
       },
     );
   }

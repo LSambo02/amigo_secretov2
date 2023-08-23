@@ -85,11 +85,13 @@ class _AddParticipantes extends State {
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     padding: EdgeInsets.only(bottom: 30.0),
-                    child: RaisedButton(
+                    child: ElevatedButton(
                         child: Text('Confirmar'),
-                        elevation: 5.0,
-                        shape: new RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0)),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 5.0,
+                          shape: new RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.0)),
+                        ),
                         onPressed: () {
                           _getCurrentUser().then((onValue) {
                             print(onValue);

@@ -13,7 +13,7 @@ class OAmigo extends StatelessWidget {
       appBar: AppBar(
         title: Text('O seu amigo ' + eu),
         actions: <Widget>[
-          FlatButton(child: Text(''), onPressed: () {}),
+          TextButton(child: Text(''), onPressed: () {}),
         ],
       ),
       body: Center(

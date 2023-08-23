@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import './groups.dart';
 import './perfil.dart';
-import '../widgets/navbarText.dart';
 
 class Pages extends StatefulWidget {
   @override
@@ -32,11 +31,11 @@ class _Pages extends State {
           items: [
             BottomNavigationBarItem(
               icon: Icon(Icons.group),
-              title: NavBarText('Grupos'),
+              label: 'Grupos',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
-              title: NavBarText('Perfil'),
+              label: 'Perfil',
             )
           ],
         ));

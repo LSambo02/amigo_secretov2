@@ -23,7 +23,7 @@ class _LogOutButton extends State<LogOutButton> {
     return Center(
         child: Opacity(
       opacity: 0.8,
-      child: FlatButton(
+      child: TextButton(
         onPressed: () {
           _auth.signOut();
           _userState.save(false);

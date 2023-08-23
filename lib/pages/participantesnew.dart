@@ -64,11 +64,13 @@ class _ParticipantesNew extends State {
             }),
         Container(
           padding: EdgeInsets.only(bottom: 50.0),
-          child: RaisedButton(
+          child: ElevatedButton(
               child: Text('Prosseguir'),
-              elevation: 5.0,
-              shape: new RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0)),
+              style: ElevatedButton.styleFrom(
+                elevation: 5.0,
+                shape: new RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.0)),
+              ),
               onPressed: () {
                 _getCurrentUser().then((onValue) {
                   print(onValue);

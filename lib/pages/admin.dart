@@ -26,9 +26,12 @@ class _Admin extends State<Admin> {
   CollectionReference grupos = FirebaseFirestore.instance.collection('grupos');
   User currentUser;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  Map<String, String> empty = new Map();
 
   @override
   Widget build(BuildContext context) {
+    Map<dynamic, dynamic> _participantesMap = {};
+
     // TODO: implement build
     return Scaffold(
       appBar: AppBar(
@@ -80,21 +83,22 @@ class _Admin extends State<Admin> {
                           borderRadius: BorderRadius.circular(20.0)),
                     ),
                     onPressed: () {
-
-                      return ShowAlertDialogDoubleOption().showAlertDialog(context: context, title: 'Deseja mesmo apagar o grupo?',
+                      return ShowAlertDialogDoubleOption().showAlertDialog(
+                        context: context,
+                        title: 'Deseja mesmo apagar o grupo?',
                         content: 'Esta acção é irreversível!',
-                        action1: (){
-                        // print('delete');
-                        grupos.doc('/$_docID').delete().then((onValue) {
+                        action1: () {
+                          // print('delete');
+                          grupos.doc('/$_docID').delete().then((onValue) {
                             Navigator.pushReplacementNamed(context, '/pages');
                             _getCurrentUser().then((onValue) {
                               print(onValue);
                             });
                           });
-                        },);
+                        },
+                      );
                       //grupos.document('grupos/$_docID').delete();
                       // print(_docID);
-
 
                       /*FutureBuilder(
                       builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -116,9 +120,16 @@ class _Admin extends State<Admin> {
                           borderRadius: BorderRadius.circular(20.0)),
                     ),
                     onPressed: () {
-                      _getCurrentUser().then((onValue) {
-                        print(onValue);
-                      });
+                      // _getCurrentUser().then((onValue) {
+                      //   print(onValue);
+                      _participantesMap = {for (var v in _participantes) v: ''};
+
+                      //empty[admin] = '';
+                      //print('El admin: ' + empty.toString());
+                      grupos
+                          .doc(widget.docID)
+                          .update({'participantes': _participantesMap});
+                      // });
                       /*FutureBuilder(
                       builder: (BuildContext context, AsyncSnapshot snapshot) {
                         participantes[snapshot.data.toString()] = '';

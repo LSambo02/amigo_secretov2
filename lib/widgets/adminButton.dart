@@ -26,7 +26,7 @@ class _AdminButton extends State<AdminButton> {
     return Center(
         child: Opacity(
       opacity: 0.8,
-      child: FlatButton(
+      child: TextButton(
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
             return Admin(_nomeGrupo, _participantes, _docID);

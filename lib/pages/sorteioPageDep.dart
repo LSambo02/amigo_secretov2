@@ -1,7 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:amigo_secretov2/pages/oAmigo.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +38,7 @@ class _SorteioDep extends State<SorteioDep> {
 
   Random rndm = new Random();
   List amigos = [];
+  String _amigo = '';
 
   @override
   void dispose() {
@@ -45,21 +46,35 @@ class _SorteioDep extends State<SorteioDep> {
     super.dispose();
   }
 
+  startTimer(user) async {
+    var _duration = new Duration(seconds: 6);
+    return new Timer(_duration, () {
+      setState(() {
+        _amigo = user;
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    amigos = getFriend();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    amigos = getFriend();
-    List codes = new List.generate(
-        amigos.length, (_) => rndm.nextInt(amigos.length + 30));
-    codes.shuffle();
+    // List codes = new List.generate(
+    //     amigos.length, (_) => rndm.nextInt(amigos.length + 30));
+    // codes.shuffle();
     String title = 'Erro de conexão';
     String content = 'Não foi possível concluir a operação';
-    String _amigo = '';
 
     List items = participantes.keys.toList();
 
     return Scaffold(
         appBar: AppBar(
-          title: Text("Particpantes"),
+          title: Text("Gira a Roleta"),
           /* actions: <Widget>[
             AdminButton(_groupName, participantes.keys.toList(), docId)
           ],*/
@@ -92,11 +107,12 @@ class _SorteioDep extends State<SorteioDep> {
                                       //print(participantes);
                                       grupos.doc(docId).update(
                                           {'participantes': participantes});
-                                      Navigator.pushReplacement(context,
-                                          MaterialPageRoute(builder: (context) {
-                                        return OAmigo(
-                                            userName, participantes[userName]);
-                                      }));
+                                      startTimer(participantes[userName]);
+                                      // Navigator.pushReplacement(context,
+                                      //     MaterialPageRoute(builder: (context) {
+                                      //   return OAmigo(
+                                      //       userName, participantes[userName]);
+                                      // }));
                                     } else {
                                       Platform.isIOS
                                           ? CupertinoAlertDialog(
@@ -168,11 +184,11 @@ class _SorteioDep extends State<SorteioDep> {
     print(_amigos);*/
 
     for (int i = 0; i < _chaves.length; i++) {
-      // if (!_amigos.contains(_chaves[i])) {
-      _res.add(_chaves[i]);
-      //print(_chaves[i]);
-      //_chaves.remove(_chaves[i]);
-      // }
+      if (!_amigos.contains(_chaves[i])) {
+        _res.add(_chaves[i]);
+        //print(_chaves[i]);
+        // _chaves.remove(_chaves[i]);
+      }
     }
     //print(chave);
     //print(_res);

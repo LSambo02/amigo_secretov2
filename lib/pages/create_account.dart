@@ -27,7 +27,7 @@ enum FormMode { LOGIN, SIGNUP }
 class _CriarUser extends State {
   final _formKey = new GlobalKey<FormState>();
   String nome, apelido, pass, pass1, email, nickname;
-  File _image;
+  PickedFile _image;
   CollectionReference utilizadores =
       FirebaseFirestore.instance.collection("utilizadores");
 
@@ -74,7 +74,7 @@ class _CriarUser extends State {
                               width: 150,
                               height: 150,
                               child: Image.file(
-                                _image,
+                                File(_image.path),
                                 fit: BoxFit.fill,
                               ),
                             ),
@@ -261,8 +261,9 @@ class _CriarUser extends State {
   }
 
   Future getImage() async {
-    File image;
-    image = (await ImagePicker.platform.pickImage(source: ImageSource.gallery)) as File;
+    PickedFile image;
+    image = (await ImagePicker.platform.pickImage(source: ImageSource.gallery))
+        as PickedFile;
     setState(() {
       _image = image;
     });
@@ -278,12 +279,13 @@ class _CriarUser extends State {
     //_signInWithEmailPass(email, pass);
 
     print('im in');
-    final Reference firebaseStorageRef =
-        FirebaseStorage.instance.ref().child(nickname + '_profilePic' + dateNow+'.jpg');
+    final Reference firebaseStorageRef = FirebaseStorage.instance
+        .ref()
+        .child(nickname + '_profilePic' + dateNow + '.jpg');
     UploadTask task = _image != null
-        ? firebaseStorageRef.putFile(_image)
+        ? firebaseStorageRef.putFile(File(_image.path))
         : firebaseStorageRef.putFile(_img);
-    await (await task.whenComplete((){}))
+    await (await task.whenComplete(() {}))
         .ref
         .getDownloadURL()
         .then((value) => criar(value.toString()));
@@ -330,9 +332,7 @@ class _CriarUser extends State {
                 'Verifique seu endereço de email \n Mandamos-lhe um email de verficação');
         uplpoadImage();
         FirebaseAuth.instance.currentUser.updateDisplayName(username);
-          return user.uid;
-
-
+        return user.uid;
       }).catchError((onError) {
         setState(() {
           _isLoading = false;

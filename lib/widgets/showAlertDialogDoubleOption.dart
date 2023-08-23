@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class ShowAlertDialogDoubleOption {
@@ -12,14 +13,14 @@ class ShowAlertDialogDoubleOption {
       action1(),
       action2()}) {
     // set up the button
-    Widget okButton = FlatButton(
+    Widget okButton = TextButton(
       child: Text("OK"),
       onPressed: () {
         action1();
         Navigator.of(context).pop();
       },
     );
-    Widget cancelButton = FlatButton(
+    Widget cancelButton = TextButton(
       child: Text("Cancel"),
       onPressed: () {
         action2();
@@ -41,7 +42,11 @@ class ShowAlertDialogDoubleOption {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Platform.isAndroid ? alert : c_alert;
+        return kIsWeb
+            ? alert
+            : !Platform.isIOS
+                ? alert
+                : c_alert;
       },
     );
     // return isYes;
