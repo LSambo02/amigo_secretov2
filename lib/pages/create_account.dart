@@ -290,13 +290,17 @@ class _CriarUser extends State {
     final Reference firebaseStorageRef = FirebaseStorage.instance
         .ref()
         .child(nickname + '_profilePic' + dateNow + '.jpg');
-    UploadTask task = _image != null
-        ? firebaseStorageRef.putData(Uint8List.fromList(_image.bytes))
-        : firebaseStorageRef.putFile(_img);
-    await (await task.whenComplete(() {}))
-        .ref
-        .getDownloadURL()
-        .then((value) => criar(value.toString()));
+    UploadTask task;
+    if (_image != null) {
+      task = firebaseStorageRef.putData(Uint8List.fromList(_image.bytes));
+      ;
+      await (await task.whenComplete(() {}))
+          .ref
+          .getDownloadURL()
+          .then((value) => criar(value.toString()));
+    } else {
+      criar('');
+    }
   }
 
   void criar(String picURL) {
