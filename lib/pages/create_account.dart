@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:amigo_secretov2/pages/login.dart';
@@ -6,10 +7,11 @@ import 'package:amigo_secretov2/utilities/sharedPreferences.dart';
 import 'package:amigo_secretov2/widgets/secondaryButton.dart';
 import 'package:amigo_secretov2/widgets/showAlertDialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../widgets/loadingIndicator.dart';
 import '../widgets/primaryButton.dart';
@@ -27,7 +29,7 @@ enum FormMode { LOGIN, SIGNUP }
 class _CriarUser extends State {
   final _formKey = new GlobalKey<FormState>();
   String nome, apelido, pass, pass1, email, nickname;
-  PickedFile _image;
+  PlatformFile _image;
   CollectionReference utilizadores =
       FirebaseFirestore.instance.collection("utilizadores");
 
@@ -73,10 +75,15 @@ class _CriarUser extends State {
                             child: SizedBox(
                               width: 150,
                               height: 150,
-                              child: Image.file(
-                                File(_image.path),
-                                fit: BoxFit.fill,
-                              ),
+                              child: kIsWeb
+                                  ? Image.memory(
+                                      Uint8List.fromList(_image.bytes),
+                                      fit: BoxFit.fill,
+                                    )
+                                  : Image.file(
+                                      File(_image.path),
+                                      fit: BoxFit.fill,
+                                    ),
                             ),
                           ),
                         ),
@@ -248,12 +255,14 @@ class _CriarUser extends State {
             _errorMessage = e.message;
         });
       }
+    } else {
+      log('Something is wrong');
     }
   }
 
   bool _validateAndSave() {
     final form = _formKey.currentState;
-    if (form.validate() && pass == pass1 && _image != null) {
+    if (form.validate() && pass == pass1) {
       form.save();
       return true;
     }
@@ -261,11 +270,10 @@ class _CriarUser extends State {
   }
 
   Future getImage() async {
-    PickedFile image;
-    image = (await ImagePicker.platform.pickImage(source: ImageSource.gallery))
-        as PickedFile;
+    FilePickerResult image;
+    image = await FilePicker.platform.pickFiles(type: FileType.image);
     setState(() {
-      _image = image;
+      _image = image.files.first;
     });
   }
 
@@ -283,7 +291,7 @@ class _CriarUser extends State {
         .ref()
         .child(nickname + '_profilePic' + dateNow + '.jpg');
     UploadTask task = _image != null
-        ? firebaseStorageRef.putFile(File(_image.path))
+        ? firebaseStorageRef.putData(Uint8List.fromList(_image.bytes))
         : firebaseStorageRef.putFile(_img);
     await (await task.whenComplete(() {}))
         .ref

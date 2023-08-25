@@ -7,6 +7,7 @@ import 'package:amigo_secretov2/widgets/adminButton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:rxdart/rxdart.dart';
@@ -126,15 +127,20 @@ class _Sorteio extends State<Sorteio> {
                                       //   return OAmigo(user, participantes[user]);
                                       // }));
                                     } else {
-                                      Platform.isIOS
-                                          ? CupertinoAlertDialog(
+                                      kIsWeb
+                                          ? AlertDialog(
                                               title: Text(title),
                                               content: Text(content),
                                             )
-                                          : AlertDialog(
-                                              title: Text(title),
-                                              content: Text(content),
-                                            );
+                                          : Platform.isIOS
+                                              ? CupertinoAlertDialog(
+                                                  title: Text(title),
+                                                  content: Text(content),
+                                                )
+                                              : AlertDialog(
+                                                  title: Text(title),
+                                                  content: Text(content),
+                                                );
                                     }
                                   });
                                 },
